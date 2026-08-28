@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import plotly.graph_objects as go
 
 from data_model import COURSES, PLOS, OFFERINGS, TARGET_ATTAINMENT, R3_STANDARD_MENU, R3_INNOVATIVE_MENU, R4_LOG_COURSE_A
@@ -27,14 +26,16 @@ def load_course_data(course_code: str):
 # Sidebar
 # --------------------------------------------------------------------------
 st.sidebar.image("assets/bits_logo.png", width=140)
-st.sidebar.title("OBER+")
+st.sidebar.markdown("## OBER+")
 st.sidebar.caption("5R continuous-improvement loop on top of OBER's real CLO/PLO attainment engine")
-course_code = st.sidebar.radio("Course", list(COURSES.keys()), format_func=lambda c: f"{c} — {COURSES[c]['name']}")
-st.sidebar.markdown("---")
+st.sidebar.markdown('<div class="sidebar-eyebrow">Course</div>', unsafe_allow_html=True)
+course_code = st.sidebar.radio("Course", list(COURSES.keys()), format_func=lambda c: f"{c} — {COURSES[c]['name']}",
+                                label_visibility="collapsed")
+st.sidebar.markdown('<hr class="sidebar-divider"/>', unsafe_allow_html=True)
 st.sidebar.markdown(
-    "<span class='section-note'>All data on this page is <b>synthetic</b>, generated to demonstrate the 5R loop "
+    "<div class='sidebar-footnote'>All data on this page is <b>synthetic</b>, generated to demonstrate the 5R loop "
     "— not real student records. Attainment target shown as an illustrative uniform "
-    f"{TARGET_ATTAINMENT:.0f}% (configurable per course/CLO in a real deployment).</span>",
+    f"{TARGET_ATTAINMENT:.0f}% (configurable per course/CLO in a real deployment).</div>",
     unsafe_allow_html=True,
 )
 
@@ -53,7 +54,8 @@ st.markdown(f'<div class="oberplus-banner">📘 {course["code"]} — {course["na
             f'{OFFERINGS[0]} → {OFFERINGS[2]} · Instructor: {" → ".join(dict.fromkeys(course["instructor_by_offering"]))}</div>',
             unsafe_allow_html=True)
 
-tabs = st.tabs(["Overview", "R1 · Report", "R2 · Reflect", "R3 · Recommend", "R4 · Redesign", "R5 · Reassess"])
+tabs = st.tabs(["🏠 Overview", "📄 R1 · Report", "🔍 R2 · Reflect", "💡 R3 · Recommend",
+                "🛠️ R4 · Redesign", "✅ R5 · Reassess"])
 
 # --------------------------------------------------------------------------
 # Overview
@@ -62,16 +64,17 @@ with tabs[0]:
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown(style.kpi_card("Course Attainment (latest)", f'{course_by_offering[-1]:.1f}%',
-                                    f"Target {TARGET_ATTAINMENT:.0f}%"), unsafe_allow_html=True)
+                                    f"Target {TARGET_ATTAINMENT:.0f}%", icon="🎯"), unsafe_allow_html=True)
     with c2:
         st.markdown(style.kpi_card("Offerings Tracked", f'{len(OFFERINGS)} / 3',
-                                    "R1 gate: cleared ✓"), unsafe_allow_html=True)
+                                    "R1 gate: cleared ✓", icon="📚"), unsafe_allow_html=True)
     with c3:
         st.markdown(style.kpi_card("CLOs Flagged (R2)", f'{len(flagged_clos)} / {len(clo_ids)}',
-                                    ", ".join(flagged_clos) if flagged_clos else "none — healthy"), unsafe_allow_html=True)
+                                    ", ".join(flagged_clos) if flagged_clos else "none — healthy", icon="🚩"),
+                    unsafe_allow_html=True)
     with c4:
         st.markdown(style.kpi_card("Redesigns Logged (R4)", f'{len(R4_LOG_COURSE_A) if course_code=="CS D301 (Demo)" else 0}',
-                                    "formal + informal"), unsafe_allow_html=True)
+                                    "formal + informal", icon="🔁"), unsafe_allow_html=True)
 
     left, right = st.columns([3, 2])
     with left:
@@ -92,6 +95,22 @@ with tabs[0]:
         fig2.update_layout(title="PLO Attainment (latest offering)", xaxis_title="Attainment (%)",
                             xaxis_range=[0, 100], height=360)
         st.plotly_chart(fig2, width='stretch')
+
+    st.markdown('<div class="section-eyebrow">CLO snapshot · latest offering</div>', unsafe_allow_html=True)
+    clo_rows = [(cid, clo_by_offering[-1][cid], reflect_clo[cid].band) for cid in clo_ids]
+    st.markdown(style.clo_strip_html(clo_rows), unsafe_allow_html=True)
+
+    st.markdown(
+        f'<div class="oberplus-banner" style="background:linear-gradient(90deg,{style.BRAND_NAVY} 0%, {style.BRAND_NAVY_DEEP} 100%);">'
+        f'🧭 <b>Where this course stands in the loop:</b> '
+        + (f"{len(flagged_clos)} CLO(s) flagged in R2 ({', '.join(flagged_clos)}), "
+           f"{len([r for r in (R4_LOG_COURSE_A if course_code=='CS D301 (Demo)' else []) if r['path']=='formal'])} "
+           f"formal redesign(s) logged in R4. Open the tabs above to walk the evidence chain — "
+           f"Report → Reflect → Recommend → Redesign → Reassess."
+           if flagged_clos else
+           "no CLOs are currently flagged — this course is tracking at or above target across the board. "
+           "Open the tabs above to see how OBER+ would respond if that changed.")
+        + '</div>', unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------
 # R1 — Report
@@ -116,9 +135,12 @@ with tabs[1]:
                        yaxis_title="Attainment (%)", yaxis_range=[0, 100], height=420)
     st.plotly_chart(fig, width='stretch')
 
-    df = pd.DataFrame({cid: [clo_by_offering[oi][cid] for oi in range(3)] for cid in clo_ids}, index=OFFERINGS).T
-    df.insert(0, "CLO description (latest wording)", [clo_desc_latest[c] for c in df.index])
-    st.dataframe(df, width='stretch')
+    headers = ["CLO", "Description (latest wording)"] + list(OFFERINGS)
+    rows = [
+        [cid, clo_desc_latest[cid]] + [f"{clo_by_offering[oi][cid]:.2f}%" for oi in range(3)]
+        for cid in clo_ids
+    ]
+    st.markdown(style.data_table_html(headers, rows), unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------
 # R2 — Reflect
@@ -130,47 +152,13 @@ with tabs[2]:
                  "Band: H/M/L/VL on (attainment ÷ target) × 100, using CAA's own KPI 2.1 cutoff spacing "
                  "(90 / 60 / 30 / 0) — reused, not invented.</span>", unsafe_allow_html=True)
 
-    def reflect_table(results: dict, level: str):
-        rows = []
-        for key, r in results.items():
-            rows.append({
-                level: key, "Offering 1": r.attainments[0], "Offering 2": r.attainments[1], "Offering 3": r.attainments[2],
-                "Target": r.target, "Flagged": "🚩 Yes" if r.flagged else "No",
-                "Misses (of 3)": r.miss_count,
-                "Avg shortfall (pts)": f"{r.avg_shortfall:.2f}" if r.avg_shortfall is not None else "—",
-                "Band": r.band,
-            })
-        return pd.DataFrame(rows)
+    st.markdown('<div class="section-eyebrow">CLO level</div>', unsafe_allow_html=True)
+    st.markdown(style.reflect_table_html(reflect_clo, "CLO", OFFERINGS), unsafe_allow_html=True)
 
-    st.markdown("**CLO level**")
-    clo_df = reflect_table(reflect_clo, "CLO")
-    for _, row in clo_df.iterrows():
-        cols = st.columns([0.7, 0.7, 0.7, 0.7, 0.7, 0.9, 1.1, 1.1])
-        cols[0].write(f"**{row['CLO']}**")
-        cols[1].write(f"{row['Offering 1']:.1f}%")
-        cols[2].write(f"{row['Offering 2']:.1f}%")
-        cols[3].write(f"{row['Offering 3']:.1f}%")
-        cols[4].write(f"{row['Target']:.0f}%")
-        cols[5].write(row["Flagged"])
-        cols[6].write(f"{row['Misses (of 3)']} miss(es), avg −{row['Avg shortfall (pts)']} pts"
-                      if row["Avg shortfall (pts)"] != "—" else "no misses")
-        cols[7].markdown(style.band_chip_html(row["Band"]), unsafe_allow_html=True)
+    st.markdown('<div class="section-eyebrow">PLO level</div>', unsafe_allow_html=True)
+    st.markdown(style.reflect_table_html(reflect_plo, "PLO", OFFERINGS), unsafe_allow_html=True)
 
-    st.markdown("**PLO level**")
-    plo_df = reflect_table(reflect_plo, "PLO")
-    for _, row in plo_df.iterrows():
-        cols = st.columns([1.0, 0.7, 0.7, 0.7, 0.7, 0.9, 1.1, 1.1])
-        cols[0].write(f"**{row['PLO']}**")
-        cols[1].write(f"{row['Offering 1']:.1f}%")
-        cols[2].write(f"{row['Offering 2']:.1f}%")
-        cols[3].write(f"{row['Offering 3']:.1f}%")
-        cols[4].write(f"{row['Target']:.0f}%")
-        cols[5].write(row["Flagged"])
-        cols[6].write(f"{row['Misses (of 3)']} miss(es), avg −{row['Avg shortfall (pts)']} pts"
-                      if row["Avg shortfall (pts)"] != "—" else "no misses")
-        cols[7].markdown(style.band_chip_html(row["Band"]), unsafe_allow_html=True)
-
-    st.markdown("**Course level**")
+    st.markdown('<div class="section-eyebrow">Course level</div>', unsafe_allow_html=True)
     st.markdown(style.band_chip_html(reflect_course.band,
                 extra=f" · {'flagged' if reflect_course.flagged else 'not flagged'} · "
                       f"{reflect_course.miss_count} miss(es)"), unsafe_allow_html=True)
@@ -180,13 +168,10 @@ with tabs[2]:
     if drift_notes:
         for note in drift_notes:
             for ch in note["changes"]:
-                st.warning(
-                    f"**{note['clo_id']}** changed at *{ch['at_offering']}* — "
-                    f"RBT level {'changed' if ch['level_changed'] else 'unchanged'} "
-                    f"({ch['from_level']} → {ch['to_level']})\n\n"
-                    f"Before: \"{ch['from_text']}\"\n\nAfter: \"{ch['to_text']}\"\n\n"
-                    f"_Attached as a note only — never suspends or replaces the flag above._"
-                )
+                st.markdown(style.drift_card_html(
+                    note["clo_id"], ch["at_offering"], ch["level_changed"],
+                    ch["from_level"], ch["to_level"], ch["from_text"], ch["to_text"],
+                ), unsafe_allow_html=True)
     else:
         st.info("No wording drift detected across the 3-offering window.")
 
@@ -211,11 +196,9 @@ with tabs[3]:
         c3.markdown(style.band_chip_html(r.band), unsafe_allow_html=True)
 
         st.markdown("##### Standard practices")
-        for name, cite in R3_STANDARD_MENU:
-            st.markdown(f"- **{name}** — _{cite}_")
+        st.markdown(style.practice_grid_html(R3_STANDARD_MENU, style.CATEGORICAL[0]), unsafe_allow_html=True)
         st.markdown("##### Innovative practices")
-        for name, cite in R3_INNOVATIVE_MENU:
-            st.markdown(f"- **{name}** — _{cite}_")
+        st.markdown(style.practice_grid_html(R3_INNOVATIVE_MENU, style.BRAND_GOLD), unsafe_allow_html=True)
         st.markdown("##### Instructor choice")
         st.text_input("Free text (always available, recorded the same way as a menu pick, without a citation)",
                        placeholder="e.g. custom in-class intervention...", disabled=True)
@@ -240,17 +223,7 @@ with tabs[4]:
         st.info("No changes logged for this course in the demo window.")
     else:
         for rec in log:
-            badge = "🟢 Formal (linked to R3)" if rec["path"] == "formal" else "🟠 Informal (detected, no R3 link)"
-            with st.container():
-                st.markdown(f"**{rec['id']}** · {badge} · {rec['clo']} · {rec['offering_boundary']}")
-                st.markdown(f"{rec['what_changed']}")
-                cb1, cb2 = st.columns(2)
-                cb1.markdown(f"**Before:**\n\n{rec['before']}")
-                cb2.markdown(f"**After:**\n\n{rec['after']}")
-                st.caption(f"Changed by {rec['changed_by']} on {rec['changed_at']}"
-                           + (f" · implements {rec['recommendation_id']} ({rec['recommendation_category']})"
-                              if rec["recommendation_id"] else " · no linked R3 recommendation"))
-                st.markdown("---")
+            st.markdown(style.log_card_html(rec), unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------
 # R5 — Reassess
@@ -271,9 +244,9 @@ with tabs[5]:
         result = e.r5_reassess(target_clo, before_val, after_val)
 
         c1, c2, c3 = st.columns(3)
-        c1.markdown(style.kpi_card("Attainment before", f"{result.before:.1f}%", OFFERINGS[1]), unsafe_allow_html=True)
-        c2.markdown(style.kpi_card("Attainment after", f"{result.after:.1f}%", OFFERINGS[2]), unsafe_allow_html=True)
-        c3.markdown(style.kpi_card("Target", f"{result.target:.0f}%", "unchanged"), unsafe_allow_html=True)
+        c1.markdown(style.kpi_card("Attainment before", f"{result.before:.1f}%", OFFERINGS[1], icon="⏮️"), unsafe_allow_html=True)
+        c2.markdown(style.kpi_card("Attainment after", f"{result.after:.1f}%", OFFERINGS[2], icon="⏭️"), unsafe_allow_html=True)
+        c3.markdown(style.kpi_card("Target", f"{result.target:.0f}%", "unchanged", icon="🎯"), unsafe_allow_html=True)
 
         fig = go.Figure(go.Bar(
             x=["Before", "After"], y=[result.before, result.after],
