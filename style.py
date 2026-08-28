@@ -1,330 +1,375 @@
 """
-Shared palette + Plotly template.
+OBER's own interface, reproduced.
 
-Brand colours pulled directly from BITS Pilani Dubai's own materials — sampled
-from the official seal (assets/bits_logo.png, from her AIRE+ mid-year deck)
-and cross-checked against the srgbClr values actually used across that deck's
-slides: navy ~#002060/#011893, gold/amber ~#FFC000/#F8A819, sky blue/cyan
-~#0FC0DF/#33BCE1, red ~#FF0000/#ED1C24.
-
-The categorical series below are brand-derived but were then run through the
-dataviz skill's validator (scripts/validate_palette.js) and adjusted until
-every check passed (lightness band, chroma floor, CVD adjacent-pair separation,
-normal-vision floor, contrast) — see conversation for the exact command run.
-Status colours (H/M/L/VL) stay on the skill's own reserved status palette,
-deliberately distinct from the categorical set, so a band colour never doubles
-as a series colour on the same screen.
+Layout, colours and control styling follow the deployed BPDC OBER tool as
+documented in CAA_OBER_21:10:2025.pdf: dark navy left nav with collapsible
+groups, white top bar carrying the BITS Pilani mark / signed-in user /
+red Logout, an orange breadcrumb under it, and white content cards holding
+"Select Course Code" forms, black-header data tables and coloured report
+tables. OBER+ screens use the same components so the added stages read as
+part of the same tool rather than a separate dashboard.
 """
-import plotly.graph_objects as go
-import plotly.io as pio
 
-# --- Brand ---------------------------------------------------------------
-BRAND_NAVY = "#0B2E6B"     # primary ink / header text — from the wordmark navy
-BRAND_NAVY_DEEP = "#04184A"
-BRAND_GOLD = "#E0A62E"     # seal border/wedge gold
-BRAND_CYAN = "#19A6BD"     # seal wedge sky-blue, deepened for contrast
-BRAND_RED = "#D6362B"      # seal wedge red (reserved for critical status only — see STATUS)
+NAV_BG = "#212f3f"
+NAV_BG_HOVER = "#2b3a4d"
+NAV_ACTIVE = "#33445c"
+NAV_TEXT = "#c9d3e0"
+NAV_TEXT_ACTIVE = "#ffffff"
+NAV_GROUP = "#e8edf4"
 
-INK_PRIMARY = BRAND_NAVY_DEEP
-INK_SECONDARY = "#4A5568"
-INK_MUTED = "#8A93A6"
-SURFACE = "#fcfcfd"
-PAGE = "#f5f7fb"
-GRID = "#e3e7f0"
-BASELINE = "#c7cede"
+INK = "#1f2937"
+INK_SOFT = "#4b5563"
+INK_MUTED = "#8a94a6"
+PAGE_BG = "#eef1f5"
+CARD_BG = "#ffffff"
+BORDER = "#dfe4ec"
 
-# Validated categorical order (validate_palette.js --mode light: all PASS)
-CATEGORICAL = ["#2E5AC4", "#C2860E", "#0E8DA3", "#8A4FD1", "#2F9E7A"]
+BLUE = "#4a89dc"
+BLUE_DARK = "#3a6fb0"
+GREEN = "#26a65b"
+RED = "#e0463c"
+ORANGE = "#e8871e"
+CYAN = "#1a9fb5"
 
-STATUS = {"H": "#0ca30c", "M": "#fab219", "L": "#ec835a", "VL": "#d03b3b"}
-STATUS_ICON = {"H": "●", "M": "▲", "L": "▲", "VL": "■"}
-BAND_TEXT = {"H": "High", "M": "Medium", "L": "Low", "VL": "Very Low"}
+BRAND_NAVY = "#0b2e6b"
+BRAND_GOLD = "#e0a62e"
 
-CARD_CSS = f"""
+# Report table header fills, as OBER uses them
+HDR_BLACK = "#111827"
+HDR_RED = "#e8443a"
+HDR_ORANGE = "#ef8c2a"
+
+BAND_COLOR = {"H": "#1a9e4b", "M": "#e0a62e", "L": "#e8871e", "VL": "#d6392e"}
+BAND_LABEL = {"H": "High", "M": "Medium", "L": "Low", "VL": "Very Low"}
+
+CHART = ["#2E5AC4", "#C2860E", "#0E8DA3", "#8A4FD1", "#2F9E7A"]
+
+
+CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-html, body, [class*="css"] {{ font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; }}
+html, body, [class*="css"], .stApp {{
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}}
+.stApp {{ background: {PAGE_BG}; }}
+#MainMenu, footer {{ visibility: hidden; }}
+header[data-testid="stHeader"] {{ background: transparent; height: 0; }}
+.block-container {{ padding-top: 1.1rem; padding-bottom: 3rem; max-width: 100%; }}
 
-.stApp {{ background-color: {PAGE}; }}
+/* ---------------- Left navigation ---------------- */
+section[data-testid="stSidebar"] {{ background: {NAV_BG}; width: 268px !important; }}
+section[data-testid="stSidebar"] > div {{ background: {NAV_BG}; }}
+section[data-testid="stSidebar"] * {{ color: {NAV_TEXT}; }}
+section[data-testid="stSidebar"] .block-container {{ padding: 0 0 2rem 0; }}
 
-/* Hide Streamlit's default chrome for a product-like top bar */
-#MainMenu {{ visibility: hidden; }}
-footer {{ visibility: hidden; }}
-header[data-testid="stHeader"] {{ background: transparent; }}
-
-/* ---------------- Sidebar ---------------- */
-section[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, {BRAND_NAVY_DEEP} 0%, #071f5c 100%);
+.nav-brand {{
+    padding: 20px 18px 16px 18px;
+    font-size: 1.02rem; font-weight: 700; color: #ffffff !important;
+    letter-spacing: 0.02em; border-bottom: 1px solid rgba(255,255,255,0.07);
 }}
-section[data-testid="stSidebar"] * {{ color: #F2F5FC !important; }}
-section[data-testid="stSidebar"] .block-container {{ padding-top: 1.6rem; }}
-.sidebar-eyebrow {{
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-    color: {BRAND_CYAN} !important; margin: 18px 0 8px 0;
+.nav-brand .nav-plus {{ color: {BRAND_GOLD} !important; }}
+.nav-brand .nav-sub {{
+    display: block; font-size: 0.72rem; font-weight: 500; color: #8c9ab0 !important;
+    margin-top: 3px; letter-spacing: 0.01em;
 }}
-.sidebar-divider {{ height: 1px; background: rgba(255,255,255,0.14); border: none; margin: 18px 0; }}
-.sidebar-footnote {{
-    font-size: 0.78rem; line-height: 1.55; color: rgba(242,245,252,0.72) !important;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 10px; padding: 12px 14px; margin-top: 4px;
-}}
-.sidebar-footnote b {{ color: #F2F5FC !important; }}
-
-/* Course radio rendered as nav-style cards */
-section[data-testid="stSidebar"] div[role="radiogroup"] {{ gap: 6px; }}
-section[data-testid="stSidebar"] div[role="radiogroup"] label {{
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 10px 12px !important;
-    margin: 0 !important;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}}
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {{
-    background: rgba(255,255,255,0.10); border-color: rgba(25,166,189,0.5);
-}}
-section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] {{
-    background: rgba(25,166,189,0.18); border-color: {BRAND_CYAN};
+.nav-group {{
+    padding: 15px 18px 7px 18px; font-size: 0.73rem; font-weight: 700;
+    letter-spacing: 0.09em; text-transform: uppercase; color: #7f8ea6 !important;
 }}
 
-/* ---------------- KPI / content cards ---------------- */
-.oberplus-card {{
-    background: {SURFACE};
-    border: 1px solid rgba(11,32,96,0.08);
-    border-top: 3px solid {BRAND_GOLD};
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 2px rgba(11,32,96,0.05), 0 8px 20px -14px rgba(11,32,96,0.25);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+/* Sidebar buttons rendered as OBER's nav rows */
+section[data-testid="stSidebar"] div[data-testid="stButton"] {{ margin: 0 !important; }}
+section[data-testid="stSidebar"] .stButton > button {{
+    background: transparent !important; color: {NAV_TEXT} !important;
+    border: none !important; border-left: 3px solid transparent !important;
+    border-radius: 0 !important; text-align: left !important;
+    justify-content: flex-start !important;
+    padding: 8px 18px !important; min-height: 0 !important;
+    font-size: 0.855rem !important; font-weight: 500 !important;
+    transition: background .12s ease;
 }}
-.oberplus-card:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(11,32,96,0.08), 0 14px 28px -16px rgba(11,32,96,0.30);
+section[data-testid="stSidebar"] .stButton > button:hover {{
+    background: {NAV_BG_HOVER} !important; color: #ffffff !important;
 }}
-.oberplus-kpi-icon {{
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 9px; font-size: 1.05rem;
-    background: rgba(11,46,107,0.08); margin-bottom: 10px;
+section[data-testid="stSidebar"] .stButton > button:focus {{ box-shadow: none !important; }}
+section[data-testid="stSidebar"] .stButton > button[kind="primary"] {{
+    background: {NAV_ACTIVE} !important; color: #ffffff !important;
+    border-left-color: {BRAND_GOLD} !important; font-weight: 600 !important;
 }}
-.oberplus-kpi-value {{ font-size: 2.0rem; font-weight: 800; color: {INK_PRIMARY}; line-height: 1.1; letter-spacing: -0.02em; }}
-.oberplus-kpi-label {{ font-size: 0.76rem; color: {INK_SECONDARY}; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; font-weight: 700; }}
-.oberplus-kpi-sub {{ font-size: 0.85rem; color: {INK_MUTED}; margin-top: 6px; }}
+section[data-testid="stSidebar"] div[data-testid="stImage"] {{ padding: 16px 0 0 18px; }}
 
-.band-chip {{
-    display:inline-flex; align-items:center; gap:6px;
-    padding: 3px 10px; border-radius: 999px; font-size: 0.80rem; font-weight: 700;
-    border: 1px solid rgba(11,11,11,0.10);
+/* ---------------- Top bar ---------------- */
+.topbar {{
+    background: {CARD_BG}; border: 1px solid {BORDER}; border-radius: 6px;
+    padding: 10px 18px; margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
 }}
+.topbar-left {{ display: flex; align-items: center; gap: 12px; }}
+.topbar-mark {{ font-size: 1.0rem; font-weight: 700; color: {BRAND_NAVY}; letter-spacing: -0.01em; }}
+.topbar-mark span {{ display:block; font-size:0.66rem; font-weight:500; color:{INK_MUTED}; letter-spacing:0.02em; }}
+.topbar-right {{ display: flex; align-items: center; gap: 14px; }}
+.topbar-user {{ font-size: 0.86rem; font-weight: 700; color: {CYAN}; }}
+.topbar-logout {{
+    background: {RED}; color: #fff !important; font-size: 0.76rem; font-weight: 600;
+    padding: 4px 13px; border-radius: 4px;
+}}
+.topbar-sem {{ font-size: 0.78rem; color: {INK_MUTED}; }}
 
-.oberplus-banner {{
-    background: linear-gradient(90deg, {BRAND_NAVY_DEEP} 0%, {BRAND_NAVY} 55%, {BRAND_CYAN} 100%);
-    color: white; padding: 14px 22px; border-radius: 12px; font-size: 0.92rem; margin-bottom: 18px;
-    border-left: 4px solid {BRAND_GOLD};
-    box-shadow: 0 10px 24px -14px rgba(4,24,74,0.55);
-}}
-.oberplus-banner b {{ font-weight: 700; }}
+/* ---------------- Breadcrumb ---------------- */
+.crumb {{ margin: 2px 0 14px 2px; font-size: 1.06rem; font-weight: 700; color: {INK}; }}
+.crumb .crumb-page {{ color: {ORANGE}; margin-left: 8px; }}
 
-.section-note {{ color: {INK_SECONDARY}; font-size: 0.88rem; line-height: 1.55; }}
-.section-eyebrow {{
-    display:inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    color: {BRAND_NAVY}; background: rgba(11,32,96,0.07); padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
+/* ---------------- Content card ---------------- */
+/* st.container(border=True) styled as OBER's white content panel */
+div[data-testid="stVerticalBlockBorderWrapper"]:has(> div > div > div.oberplus-card-marker) {{
+    background: {CARD_BG}; border: 1px solid {BORDER} !important; border-radius: 6px;
+    padding: 16px 20px 18px 20px; margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
 }}
-h1, h2, h3 {{ color: {INK_PRIMARY}; letter-spacing: -0.01em; }}
+.oberplus-card-marker {{ display: none; }}
+.card {{
+    background: {CARD_BG}; border: 1px solid {BORDER}; border-radius: 6px;
+    padding: 18px 20px 20px 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+}}
+.card-title {{ font-size: 0.95rem; font-weight: 700; color: {INK}; margin-bottom: 14px; }}
+.card-note {{ font-size: 0.83rem; color: {INK_SOFT}; line-height: 1.55; margin-bottom: 12px; }}
+.field-label {{ font-size: 0.79rem; color: {INK_SOFT}; font-weight: 600; margin-bottom: 3px; }}
 
-/* ---------------- Tabs ---------------- */
-.stTabs [data-baseweb="tab-list"] {{ gap: 4px; border-bottom: 1px solid {GRID}; }}
-.stTabs [data-baseweb="tab"] {{ font-weight: 600; color: {INK_SECONDARY}; padding: 10px 16px; }}
-.stTabs [aria-selected="true"] {{ color: {BRAND_NAVY} !important; }}
-div[data-baseweb="tab-highlight"] {{ background-color: {BRAND_GOLD} !important; height: 3px !important; }}
+/* ---------------- Streamlit control restyling ---------------- */
+div[data-testid="stSelectbox"] label, div[data-testid="stTextInput"] label,
+div[data-testid="stNumberInput"] label, div[data-testid="stFileUploader"] label {{
+    font-size: 0.79rem !important; color: {INK_SOFT} !important; font-weight: 600 !important;
+}}
+div[data-baseweb="select"] > div {{
+    border-radius: 4px !important; border-color: {BORDER} !important; min-height: 36px;
+}}
+.stTextInput input, .stNumberInput input {{
+    border-radius: 4px !important; border-color: {BORDER} !important; font-size: 0.86rem;
+}}
+/* read-only rows in CLO Entry / Evaluation Components stay legible */
+.stTextInput input:disabled, .stNumberInput input:disabled {{
+    -webkit-text-fill-color: {INK} !important; color: {INK} !important;
+    background: #f7f9fc !important; opacity: 1 !important;
+}}
+.stButton > button {{
+    background: {BLUE}; color: #fff; border: none; border-radius: 4px;
+    font-size: 0.82rem; font-weight: 600; padding: 6px 16px; min-height: 34px;
+    transition: background .12s ease;
+}}
+.stButton > button:hover {{ background: {BLUE_DARK}; color: #fff; }}
+.stButton > button:focus {{ box-shadow: none; color: #fff; }}
+.stDownloadButton > button {{
+    background: {GREEN}; color: #fff; border: none; border-radius: 4px;
+    font-size: 0.82rem; font-weight: 600; padding: 6px 16px; min-height: 34px;
+}}
+.stDownloadButton > button:hover {{ background: #1e8c4c; color: #fff; }}
+div[data-testid="stFileUploaderDropzone"] {{
+    background: #f8fafc; border: 1px dashed {BORDER}; border-radius: 4px; padding: 10px 14px;
+}}
+div[data-testid="stAlert"] {{ border-radius: 5px; font-size: 0.85rem; }}
 
-/* ---------------- Alerts restyled to match brand ---------------- */
-div[data-testid="stAlert"] {{ border-radius: 12px; border: 1px solid rgba(11,32,96,0.08); box-shadow: 0 1px 2px rgba(11,32,96,0.05); }}
+/* ---------------- Data tables ---------------- */
+.tbl-wrap {{ overflow-x: auto; border: 1px solid {BORDER}; border-radius: 5px; margin-bottom: 14px; }}
+table.ober {{ width: 100%; border-collapse: collapse; font-size: 0.845rem; background: {CARD_BG}; }}
+table.ober th {{
+    background: {HDR_BLACK}; color: #fff; text-align: left; font-weight: 600;
+    padding: 9px 13px; white-space: nowrap; font-size: 0.80rem;
+}}
+table.ober td {{
+    padding: 9px 13px; border-bottom: 1px solid #eef1f5; color: {INK_SOFT}; white-space: nowrap;
+}}
+table.ober tr:last-child td {{ border-bottom: none; }}
+table.ober tr:hover td {{ background: #f9fbfd; }}
+table.ober td.num {{ text-align: right; font-variant-numeric: tabular-nums; }}
+table.ober td.strong {{ color: {INK}; font-weight: 600; }}
 
-/* ---------------- st.metric ---------------- */
-div[data-testid="stMetric"] {{
-    background: {SURFACE}; border: 1px solid rgba(11,32,96,0.08); border-radius: 12px;
-    padding: 12px 16px; box-shadow: 0 1px 2px rgba(11,32,96,0.05);
+/* Report tables with OBER's coloured caption bars */
+.rpt-cap {{
+    color: #fff; font-weight: 700; font-size: 0.86rem; text-align: center;
+    padding: 8px 12px; border-radius: 5px 5px 0 0;
 }}
-div[data-testid="stMetricLabel"] {{ color: {INK_SECONDARY} !important; font-weight: 600; }}
-div[data-testid="stMetricValue"] {{ color: {INK_PRIMARY} !important; }}
+.rpt-cap.red {{ background: {HDR_RED}; }}
+.rpt-cap.orange {{ background: {HDR_ORANGE}; }}
+table.rpt {{ width: 100%; border-collapse: collapse; font-size: 0.845rem; background: {CARD_BG}; }}
+table.rpt th {{
+    background: #f1f4f8; color: {INK}; font-weight: 700; font-size: 0.80rem;
+    padding: 8px 12px; border: 1px solid #e3e8f0; text-align: center; white-space: nowrap;
+}}
+table.rpt th.lead {{ text-align: left; }}
+table.rpt td {{
+    padding: 8px 12px; border: 1px solid #e9edf4; text-align: center;
+    color: {INK_SOFT}; font-variant-numeric: tabular-nums; white-space: nowrap;
+}}
+table.rpt td.lead {{ text-align: left; color: {INK}; }}
+table.rpt tr.total td {{ background: #fdf6e3; font-weight: 700; color: {INK}; }}
+table.rpt tr.grand td {{ background: {HDR_BLACK}; color: #fff; font-weight: 700; }}
+table.rpt td.tint1 {{ background: #fdf1f2; }}
+table.rpt td.tint2 {{ background: #eefaf1; }}
+table.rpt td.tint3 {{ background: #eef4fd; }}
+table.rpt td.ok {{ background: #eefaf1; }}
+table.rpt td.bad {{ background: #fdeeed; }}
 
-/* ---------------- Practice / log cards ---------------- */
-.practice-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 6px 0 20px 0; }}
-.practice-card {{
-    background: {SURFACE}; border: 1px solid rgba(11,32,96,0.08); border-radius: 12px;
-    padding: 14px 16px; box-shadow: 0 1px 2px rgba(11,32,96,0.05);
-    border-left: 4px solid var(--accent, {BRAND_NAVY});
+/* Matrix entry grid (weightage / mark distribution / mapping) */
+.mx-head, .mx-row {{ display: grid; gap: 6px; align-items: center; margin-bottom: 5px; }}
+.mx-head div {{
+    font-size: 0.74rem; font-weight: 700; color: {INK}; text-align: center;
+    background: #f1f4f8; padding: 7px 4px; border-radius: 3px; line-height: 1.25;
 }}
-.practice-card .practice-title {{ font-weight: 700; color: {INK_PRIMARY}; font-size: 0.92rem; margin-bottom: 4px; }}
-.practice-card .practice-cite {{ font-size: 0.80rem; color: {INK_MUTED}; font-style: italic; }}
+.mx-head div.lead, .mx-row div.lead {{ text-align: left; }}
+.mx-total {{
+    font-size: 0.86rem; font-weight: 700; text-align: center; padding: 7px 4px;
+    border-radius: 3px; font-variant-numeric: tabular-nums;
+}}
+.mx-total.ok {{ background: #d9f2e2; color: #14663a; }}
+.mx-total.bad {{ background: #fbdedc; color: #9c2b23; }}
+.mx-lead {{ font-size: 0.85rem; font-weight: 600; color: {INK}; padding: 7px 2px; }}
+div[data-testid="stNumberInput"] input {{ text-align: center; padding: 4px 6px !important; }}
+div[data-testid="stNumberInput"] button {{ display: none; }}
 
-.log-card {{
-    background: {SURFACE}; border: 1px solid rgba(11,32,96,0.08); border-radius: 14px;
-    padding: 16px 20px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(11,32,96,0.05);
-    border-left: 5px solid var(--accent, {BRAND_NAVY});
+/* ---------------- Chips / status ---------------- */
+.chip {{
+    display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px;
+    border-radius: 999px; font-size: 0.76rem; font-weight: 700;
 }}
-.log-card .log-head {{ display:flex; align-items:center; gap:10px; margin-bottom: 8px; flex-wrap: wrap; }}
-.log-card .log-id {{ font-weight: 800; color: {INK_PRIMARY}; }}
-.log-card .log-badge {{
-    font-size: 0.74rem; font-weight: 700; padding: 2px 9px; border-radius: 999px;
-    background: var(--accent-bg, rgba(11,32,96,0.08)); color: var(--accent, {BRAND_NAVY});
-}}
-.log-card .log-meta {{ font-size: 0.82rem; color: {INK_MUTED}; }}
-.log-card .log-body {{ font-size: 0.90rem; color: {INK_SECONDARY}; margin-bottom: 10px; }}
-.log-ba-grid {{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 8px; }}
-.log-ba-box {{ background: {PAGE}; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; color: {INK_SECONDARY}; }}
-.log-ba-box b {{ display:block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: {INK_MUTED}; margin-bottom: 3px; }}
+.chip-flag {{ background: #fdeeed; color: {RED}; }}
+.chip-ok {{ background: #eef2f7; color: {INK_MUTED}; }}
+.pill-formal {{ background: #e6f6ec; color: #14663a; }}
+.pill-detected {{ background: #fdf1de; color: #8a5a12; }}
 
-/* ---------------- Reflect data table ---------------- */
-.rt-wrap {{
-    background: {SURFACE}; border: 1px solid rgba(11,32,96,0.08); border-radius: 14px;
-    overflow: hidden; box-shadow: 0 1px 2px rgba(11,32,96,0.05); margin-bottom: 18px;
+/* ---------------- Stat row ---------------- */
+.stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }}
+.stat {{
+    background: {CARD_BG}; border: 1px solid {BORDER}; border-top: 3px solid {BRAND_GOLD};
+    border-radius: 6px; padding: 14px 16px;
 }}
-.rt-table {{ width: 100%; border-collapse: collapse; font-size: 0.88rem; }}
-.rt-table th {{
-    text-align: left; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-    color: {INK_MUTED}; background: {PAGE}; padding: 10px 16px; border-bottom: 1px solid rgba(11,32,96,0.08);
-}}
-.rt-table td {{ padding: 12px 16px; border-bottom: 1px solid rgba(11,32,96,0.06); color: {INK_SECONDARY}; vertical-align: middle; }}
-.rt-table tr:last-child td {{ border-bottom: none; }}
-.rt-table tr:hover td {{ background: rgba(11,32,96,0.02); }}
-.rt-table td.rt-id {{ font-weight: 700; color: {INK_PRIMARY}; }}
-.flag-chip {{
-    display:inline-flex; align-items:center; gap:5px; font-size: 0.78rem; font-weight: 600; padding: 2px 9px; border-radius: 999px;
-}}
-.flag-chip.flag-yes {{ background: {BRAND_RED}18; color: {BRAND_RED}; }}
-.flag-chip.flag-no {{ background: {INK_MUTED}18; color: {INK_MUTED}; }}
+.stat .k {{ font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {INK_MUTED}; }}
+.stat .v {{ font-size: 1.65rem; font-weight: 700; color: {INK}; line-height: 1.15; margin-top: 3px; }}
+.stat .s {{ font-size: 0.79rem; color: {INK_MUTED}; margin-top: 2px; }}
 
-/* ---------------- CLO snapshot strip ---------------- */
-.clo-strip {{ display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 6px 0; }}
-.clo-pill {{
-    display:flex; align-items:center; gap:8px; background: {SURFACE};
-    border: 1px solid rgba(11,32,96,0.08); border-radius: 11px; padding: 9px 14px;
-    box-shadow: 0 1px 2px rgba(11,32,96,0.05); min-width: 150px;
+/* ---------------- Record card (R3 decisions / R4 log) ---------------- */
+.rec {{
+    background: {CARD_BG}; border: 1px solid {BORDER}; border-left: 4px solid var(--a, {BLUE});
+    border-radius: 6px; padding: 14px 18px; margin-bottom: 12px;
 }}
-.clo-pill .clo-pill-id {{ font-weight: 700; color: {INK_PRIMARY}; font-size: 0.86rem; }}
-.clo-pill .clo-pill-val {{ font-size: 0.86rem; color: {INK_SECONDARY}; margin-left: auto; }}
+.rec-head {{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 7px; }}
+.rec-id {{ font-weight: 700; color: {INK}; font-size: 0.9rem; }}
+.rec-meta {{ font-size: 0.8rem; color: {INK_MUTED}; }}
+.rec-body {{ font-size: 0.87rem; color: {INK_SOFT}; line-height: 1.55; margin-bottom: 10px; }}
+.ba {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 9px; }}
+.ba-box {{ background: #f7f9fc; border-radius: 4px; padding: 9px 12px; font-size: 0.83rem; color: {INK_SOFT}; }}
+.ba-box b {{ display: block; font-size: 0.69rem; text-transform: uppercase; letter-spacing: 0.06em; color: {INK_MUTED}; margin-bottom: 3px; }}
+
+.menu-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-bottom: 6px; }}
+.menu-card {{
+    background: {CARD_BG}; border: 1px solid {BORDER}; border-left: 3px solid var(--a, {BLUE});
+    border-radius: 5px; padding: 11px 14px;
+}}
+.menu-card .t {{ font-weight: 600; color: {INK}; font-size: 0.87rem; margin-bottom: 3px; }}
+.menu-card .c {{ font-size: 0.77rem; color: {INK_MUTED}; font-style: italic; line-height: 1.4; }}
 </style>
 """
 
 
-def band_chip_html(band_code: str, extra: str = "") -> str:
-    color = STATUS[band_code]
-    label = BAND_TEXT[band_code]
-    return (f'<span class="band-chip" style="background:{color}22;color:{color};'
-            f'border-color:{color}55;">{STATUS_ICON[band_code]} {label}{extra}</span>')
+from contextlib import contextmanager
+import streamlit as st
 
 
-def kpi_card(label: str, value: str, sub: str = "", icon: str = "") -> str:
-    sub_html = f'<div class="oberplus-kpi-sub">{sub}</div>' if sub else ""
-    icon_html = f'<div class="oberplus-kpi-icon">{icon}</div>' if icon else ""
-    return (f'<div class="oberplus-card">{icon_html}<div class="oberplus-kpi-label">{label}</div>'
-            f'<div class="oberplus-kpi-value">{value}</div>{sub_html}</div>')
+@contextmanager
+def card(title: str = "", note: str = "", title_right: str = ""):
+    """OBER's white content panel. Uses a real Streamlit container so anything
+    rendered inside it (widgets included) sits within the panel."""
+    with st.container(border=True):
+        st.markdown('<div class="oberplus-card-marker"></div>', unsafe_allow_html=True)
+        if title:
+            right = (f'<span style="float:right;font-weight:500;font-size:0.78rem;'
+                     f'color:{INK_MUTED};">{title_right}</span>') if title_right else ""
+            st.markdown(f'<div class="card-title">{title}{right}</div>', unsafe_allow_html=True)
+        if note:
+            st.markdown(f'<div class="card-note">{note}</div>', unsafe_allow_html=True)
+        yield
 
 
-def practice_grid_html(items: list, accent: str) -> str:
+def topbar(user: str, semester: str) -> str:
+    return (
+        f'<div class="topbar"><div class="topbar-left">'
+        f'<div class="topbar-mark">BITS Pilani<span>Dubai Campus</span></div>'
+        f'</div><div class="topbar-right">'
+        f'<span class="topbar-sem">{semester}</span>'
+        f'<span class="topbar-user">{user}</span>'
+        f'<span class="topbar-logout">Logout</span>'
+        f'</div></div>'
+    )
+
+
+def crumb(page: str) -> str:
+    return f'<div class="crumb">BPDC OBER+<span class="crumb-page">{page}</span></div>'
+
+
+def band_chip(code: str) -> str:
+    c = BAND_COLOR.get(code, INK_MUTED)
+    return (f'<span class="chip" style="background:{c}1f;color:{c};">'
+            f'{BAND_LABEL.get(code, code)}</span>')
+
+
+def stat(k: str, v: str, s: str = "") -> str:
+    sub = f'<div class="s">{s}</div>' if s else ""
+    return f'<div class="stat"><div class="k">{k}</div><div class="v">{v}</div>{sub}</div>'
+
+
+def table(headers, rows, classes=None) -> str:
+    """Black-header data table. rows: list of lists of pre-formatted strings.
+    classes: optional list of per-column css classes."""
+    classes = classes or [""] * len(headers)
+    head = "".join(f"<th>{h}</th>" for h in headers)
+    body = ""
+    for r in rows:
+        tds = "".join(f'<td class="{classes[i] if i < len(classes) else ""}">{c}</td>'
+                      for i, c in enumerate(r))
+        body += f"<tr>{tds}</tr>"
+    return f'<div class="tbl-wrap"><table class="ober"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+
+
+def report_table(caption, caption_color, headers, rows, row_classes=None, cell_classes=None) -> str:
+    """OBER report table with a coloured caption bar.
+    rows: list of lists. row_classes: per-row tr class. cell_classes: per-row list of td classes."""
+    cap = f'<div class="rpt-cap {caption_color}">{caption}</div>' if caption else ""
+    head = "".join(
+        f'<th class="{"lead" if i == 0 else ""}">{h}</th>' for i, h in enumerate(headers))
+    body = ""
+    for ri, r in enumerate(rows):
+        rc = (row_classes[ri] if row_classes and ri < len(row_classes) else "") or ""
+        cc = cell_classes[ri] if cell_classes and ri < len(cell_classes) else None
+        tds = ""
+        for i, c in enumerate(r):
+            base = "lead" if i == 0 else ""
+            extra = (cc[i] if cc and i < len(cc) else "") or ""
+            cls = " ".join(x for x in (base, extra) if x)
+            tds += f'<td class="{cls}">{c}</td>'
+        body += f'<tr class="{rc}">{tds}</tr>'
+    return (f'{cap}<div class="tbl-wrap" style="border-radius:0 0 5px 5px;">'
+            f'<table class="rpt"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>')
+
+
+def menu_grid(items, accent) -> str:
     cards = "".join(
-        f'<div class="practice-card" style="--accent:{accent};">'
-        f'<div class="practice-title">{name}</div><div class="practice-cite">{cite}</div></div>'
-        for name, cite in items
-    )
-    return f'<div class="practice-grid">{cards}</div>'
+        f'<div class="menu-card" style="--a:{accent};"><div class="t">{n}</div>'
+        f'<div class="c">{c}</div></div>' for n, c in items)
+    return f'<div class="menu-grid">{cards}</div>'
 
 
-def log_card_html(rec: dict) -> str:
-    is_formal = rec["path"] == "formal"
-    accent = STATUS["H"] if is_formal else BRAND_GOLD
-    accent_bg = f"{accent}22"
-    badge_text = "Formal · linked to R3" if is_formal else "Informal · detected, no R3 link"
-    footer = (f"Changed by {rec['changed_by']} on {rec['changed_at']}"
-              + (f" · implements {rec['recommendation_id']} ({rec['recommendation_category']})"
-                 if rec["recommendation_id"] else " · no linked R3 recommendation"))
+def record_card(rid, badge, badge_class, meta, body, before=None, after=None, footer="", accent=BLUE) -> str:
+    ba = ""
+    if before is not None:
+        ba = (f'<div class="ba"><div class="ba-box"><b>Before</b>{before}</div>'
+              f'<div class="ba-box"><b>After</b>{after}</div></div>')
+    foot = f'<div class="rec-meta">{footer}</div>' if footer else ""
     return (
-        f'<div class="log-card" style="--accent:{accent};--accent-bg:{accent_bg};">'
-        f'<div class="log-head"><span class="log-id">{rec["id"]}</span>'
-        f'<span class="log-badge">{badge_text}</span>'
-        f'<span class="log-meta">{rec["clo"]} · {rec["offering_boundary"]}</span></div>'
-        f'<div class="log-body">{rec["what_changed"]}</div>'
-        f'<div class="log-ba-grid">'
-        f'<div class="log-ba-box"><b>Before</b>{rec["before"]}</div>'
-        f'<div class="log-ba-box"><b>After</b>{rec["after"]}</div>'
-        f'</div>'
-        f'<div class="log-meta">{footer}</div>'
-        f'</div>'
+        f'<div class="rec" style="--a:{accent};"><div class="rec-head">'
+        f'<span class="rec-id">{rid}</span>'
+        f'<span class="chip {badge_class}">{badge}</span>'
+        f'<span class="rec-meta">{meta}</span></div>'
+        f'<div class="rec-body">{body}</div>{ba}{foot}</div>'
     )
-
-
-def data_table_html(headers: list, rows: list, id_col: int = 0) -> str:
-    """rows: list of lists of already-formatted cell strings, aligned to headers."""
-    head = "<tr>" + "".join(f"<th>{h}</th>" for h in headers) + "</tr>"
-    body = "".join(
-        "<tr>" + "".join(f'<td class="rt-id">{c}</td>' if i == id_col else f"<td>{c}</td>"
-                          for i, c in enumerate(row)) + "</tr>"
-        for row in rows
-    )
-    return f'<div class="rt-wrap"><table class="rt-table">{head}{body}</table></div>'
-
-
-def drift_card_html(clo_id: str, at_offering: str, level_changed: bool, from_level: str, to_level: str,
-                     from_text: str, to_text: str) -> str:
-    accent = BRAND_GOLD
-    return (
-        f'<div class="log-card" style="--accent:{accent};--accent-bg:{accent}22;">'
-        f'<div class="log-head"><span class="log-id">{clo_id}</span>'
-        f'<span class="log-badge">changed at {at_offering}</span>'
-        f'<span class="log-meta">RBT level {"changed" if level_changed else "unchanged"} '
-        f'({from_level} → {to_level})</span></div>'
-        f'<div class="log-ba-grid">'
-        f'<div class="log-ba-box"><b>Before</b>{from_text}</div>'
-        f'<div class="log-ba-box"><b>After</b>{to_text}</div>'
-        f'</div>'
-        f'<div class="log-meta">Attached as a note only — never suspends or replaces the R2 flag.</div>'
-        f'</div>'
-    )
-
-
-def reflect_table_html(results: dict, level_label: str, offerings: list) -> str:
-    head = (f'<tr><th>{level_label}</th><th>{offerings[0]}</th><th>{offerings[1]}</th><th>{offerings[2]}</th>'
-            f'<th>Target</th><th>Flagged</th><th>Misses / avg shortfall</th><th>Band</th></tr>')
-    rows_html = []
-    for key, r in results.items():
-        flag_html = (f'<span class="flag-chip flag-yes">🚩 Yes</span>' if r.flagged
-                     else '<span class="flag-chip flag-no">No</span>')
-        miss_txt = (f"{r.miss_count} miss(es), avg −{r.avg_shortfall:.2f} pts"
-                    if r.avg_shortfall is not None else "no misses")
-        rows_html.append(
-            f'<tr><td class="rt-id">{key}</td>'
-            f'<td>{r.attainments[0]:.1f}%</td><td>{r.attainments[1]:.1f}%</td><td>{r.attainments[2]:.1f}%</td>'
-            f'<td>{r.target:.0f}%</td><td>{flag_html}</td><td>{miss_txt}</td>'
-            f'<td>{band_chip_html(r.band)}</td></tr>'
-        )
-    return f'<div class="rt-wrap"><table class="rt-table">{head}{"".join(rows_html)}</table></div>'
-
-
-def clo_strip_html(rows: list) -> str:
-    """rows: list of (clo_id, latest_value, band_code)"""
-    pills = "".join(
-        f'<div class="clo-pill"><span class="clo-pill-id">{cid}</span>'
-        f'{band_chip_html(band)}<span class="clo-pill-val">{val:.1f}%</span></div>'
-        for cid, val, band in rows
-    )
-    return f'<div class="clo-strip">{pills}</div>'
-
-
-def apply_plotly_template():
-    template = go.layout.Template()
-    template.layout = go.Layout(
-        paper_bgcolor=SURFACE,
-        plot_bgcolor=SURFACE,
-        font=dict(family="system-ui, -apple-system, Segoe UI, sans-serif", color=INK_SECONDARY, size=13),
-        title=dict(font=dict(color=INK_PRIMARY, size=15)),
-        xaxis=dict(gridcolor=GRID, linecolor=BASELINE, zerolinecolor=BASELINE, tickfont=dict(color=INK_MUTED)),
-        yaxis=dict(gridcolor=GRID, linecolor=BASELINE, zerolinecolor=BASELINE, tickfont=dict(color=INK_MUTED)),
-        legend=dict(bgcolor="rgba(0,0,0,0)"),
-        margin=dict(t=40, l=10, r=10, b=10),
-        colorway=CATEGORICAL,
-    )
-    pio.templates["oberplus"] = template
-    pio.templates.default = "oberplus"

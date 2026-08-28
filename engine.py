@@ -1,99 +1,19 @@
 """
-OBER+ computation engine.
+OBER+ 5R helpers — pure functions, no data coupling.
 
-Implements, in order:
-  - OBER's real attainment formulas (verified against OBER_Presentation_6:7:26.pdf)
-  - R1 Report: 3-offering gate
-  - R2 Reflect: persistence flag + average shortfall, banded H/M/L/VL
-              (cutoffs reused from CAA's own OBEF University Guidebook v11.5,
-              Appendix A / KPI 2.1: 90/60/30/0 — not invented)
-              + RBT/Bloom's-verb drift detection on CLO wording
-  - R3 Recommend: evidence packaging (menu lives in data_model.py)
-  - R4 Redesign: change-log passthrough (seeded in data_model.py)
-  - R5 Reassess: immediate before/after gap-closure metric, same H/M/L/VL bands
+  R2  persistence flag + average shortfall, banded H/M/L/VL using CAA's own
+      OBEF University Guidebook v11.5 cutoff spacing (90/60/30/0, Appendix A /
+      KPI 2.1) — reused, not invented
+      + RBT/Bloom's-verb classification for the CLO wording drift check
+  R5  immediate before/after gap-closure metric, same H/M/L/VL bands
 
-No step here manually reweights CLOs into a course number using a weight we
-invent — course/PLO-level numbers are always computed from OBER's own
-per-offering formula, since each offering can use different component
-weightages (confirmed: "not everytime same weightage we are following").
+Attainment itself is computed in compute.py, against OBER's own per-offering
+numbers — nothing here re-derives or reweights it.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import re
 
-from data_model import simulate_marks, TARGET_ATTAINMENT, OFFERINGS
-
-# ---------------------------------------------------------------------------
-# OBER's real attainment formulas
-# ---------------------------------------------------------------------------
-
-def clo_attainment(course: dict, offering_idx: int) -> dict:
-    """CLO attainment (%) = weighted average across components of
-    (marks scored / marks possible for that CLO's questions), weight = that
-    component's weight in THIS offering."""
-    marks = simulate_marks(course, offering_idx)
-    components = course["components_by_offering"][offering_idx]
-    clo_ids = [c["id"] for c in course["clos"]]
-
-    result = {}
-    for clo_id in clo_ids:
-        weighted_sum = 0.0
-        weight_total = 0.0
-        for comp_name, comp_weight in components.items():
-            comp_data = marks.get(comp_name, {}).get(clo_id)
-            if comp_data is None or comp_data["possible"] == 0:
-                continue
-            frac = comp_data["scored"] / comp_data["possible"]
-            weighted_sum += frac * comp_weight
-            weight_total += comp_weight
-        result[clo_id] = round((weighted_sum / weight_total) * 100, 2) if weight_total else None
-    return result
-
-
-def clo_mark_share(course: dict, offering_idx: int) -> dict:
-    """Each CLO's share of total course marks THIS offering (for reference/
-    display only — never used to manually reweight a course number)."""
-    marks_map = course["marks_by_offering"][offering_idx]
-    totals = {}
-    grand_total = 0.0
-    for comp_name, clo_marks in marks_map.items():
-        for clo_id, m in clo_marks.items():
-            totals[clo_id] = totals.get(clo_id, 0.0) + m
-            grand_total += m
-    return {clo_id: round((m / grand_total) * 100, 1) for clo_id, m in totals.items()} if grand_total else {}
-
-
-def plo_attainment(course: dict, offering_idx: int) -> dict:
-    """PLO attainment = simple average of the CLO attainments mapped to it."""
-    clo_att = clo_attainment(course, offering_idx)
-    result = {}
-    for plo in course.get("_plo_ids", []):
-        mapped = [clo_att[c] for c, plos in course["clo_plo_map"].items() if plo in plos and clo_att.get(c) is not None]
-        result[plo] = round(sum(mapped) / len(mapped), 2) if mapped else None
-    return result
-
-
-def course_attainment(course: dict, offering_idx: int) -> float:
-    """Course attainment = CLO attainments weighted by each CLO's share of total marks."""
-    clo_att = clo_attainment(course, offering_idx)
-    shares = clo_mark_share(course, offering_idx)
-    weighted_sum = sum(clo_att[c] * (shares.get(c, 0) / 100) for c in clo_att if clo_att[c] is not None)
-    return round(weighted_sum, 2)
-
-
-def prepare_course(course: dict, plo_ids: list):
-    course = dict(course)
-    course["_plo_ids"] = plo_ids
-    return course
-
-
-# ---------------------------------------------------------------------------
-# R1 — Report: 3-offering gate
-# ---------------------------------------------------------------------------
-
-def r1_gate(course: dict) -> dict:
-    n = len(course["components_by_offering"])
-    return {"offerings_available": n, "gate_cleared": n >= 3}
-
+TARGET_ATTAINMENT = 60.0
 
 # ---------------------------------------------------------------------------
 # R2 — Reflect: flag + shortfall + H/M/L/VL band, + RBT drift
@@ -174,27 +94,6 @@ def classify_rbt(description: str) -> str:
     upgrade, not a design requirement)."""
     first_word = re.findall(r"[A-Za-z]+", description)[0].lower() if description else ""
     return BLOOM_VERB_LEVELS.get(first_word, "Unclassified")
-
-
-def r2_drift(course: dict) -> list:
-    """Compare each CLO's description + classified RBT level across the 3
-    offerings; return a note for any CLO whose wording or level changed."""
-    notes = []
-    for clo in course["clos"]:
-        descs = clo["description_by_offering"]
-        levels = [classify_rbt(d) for d in descs]
-        changes = []
-        for i in range(1, len(descs)):
-            if descs[i] != descs[i - 1]:
-                changes.append({
-                    "at_offering": OFFERINGS[i],
-                    "from_text": descs[i - 1], "to_text": descs[i],
-                    "from_level": levels[i - 1], "to_level": levels[i],
-                    "level_changed": levels[i - 1] != levels[i],
-                })
-        if changes:
-            notes.append({"clo_id": clo["id"], "changes": changes})
-    return notes
 
 
 # ---------------------------------------------------------------------------
