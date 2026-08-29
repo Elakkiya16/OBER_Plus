@@ -33,7 +33,7 @@ def band(ratio: float) -> str:
     return "VL"
 
 
-BAND_LABEL = {"H": "High", "M": "Medium", "L": "Low", "VL": "Very Low"}
+BAND_LABEL = {"H": "High", "M": "Medium", "L": "Low", "VL": "Very Low", "OK": "On target"}
 
 
 @dataclass
@@ -65,7 +65,10 @@ def r2_reflect_series(item_id: str, label: str, attainments: list, target: float
         item_id=item_id, label=label, attainments=attainments, target=target,
         flagged=flagged, miss_count=len(misses),
         avg_shortfall=avg_shortfall, avg_ratio=avg_ratio,
-        band=band(avg_ratio) if avg_ratio is not None else "H",
+        # An item that never fell below target has no shortfall to band — it is
+        # "On target", NOT band High. Handing it "H" made every healthy row look
+        # like a graded result and hid the real spread across H/M/L/VL.
+        band=band(avg_ratio) if avg_ratio is not None else "OK",
     )
 
 

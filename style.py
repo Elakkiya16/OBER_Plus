@@ -1,375 +1,483 @@
 """
-OBER's own interface, reproduced.
+OBER+ interface — the approved design.
 
-Layout, colours and control styling follow the deployed BPDC OBER tool as
-documented in CAA_OBER_21:10:2025.pdf: dark navy left nav with collapsible
-groups, white top bar carrying the BITS Pilani mark / signed-in user /
-red Logout, an orange breadcrumb under it, and white content cards holding
-"Select Course Code" forms, black-header data tables and coloured report
-tables. OBER+ screens use the same components so the added stages read as
-part of the same tool rather than a separate dashboard.
+Navy masthead carrying the BITS Pilani mark and primary nav; a second row that
+is either section pills (OBER's screens) or the numbered 1-2-3-4-5 stage strip
+(the 5R loop), so the loop reads as a sequence rather than five more menu items.
+White content panels below.
+
+Colour is the BITS Pilani AIRE+ palette sampled from the seal in her own deck —
+navy #011E4B / #0B2E6B, gold #F8A819, cyan #0FC0DF, red #ED1C24. Gold is chrome
+only and cyan is the interactive accent, so gold never does two jobs.
+
+Band colours are a separate reserved 4-step severity ramp, validated all-PASS by
+the dataviz validator (lightness band, chroma floor, CVD adjacent separation,
+normal-vision floor, contrast). They are never reused as a chart series colour,
+and every band always ships with its text label — which is what discharges the
+amber step's contrast warning.
+
+Type: Sora for headings, Manrope for everything else.
 """
+from contextlib import contextmanager
+from functools import lru_cache
+import base64
+import pathlib
+import streamlit as st
 
-NAV_BG = "#212f3f"
-NAV_BG_HOVER = "#2b3a4d"
-NAV_ACTIVE = "#33445c"
-NAV_TEXT = "#c9d3e0"
-NAV_TEXT_ACTIVE = "#ffffff"
-NAV_GROUP = "#e8edf4"
 
-INK = "#1f2937"
-INK_SOFT = "#4b5563"
-INK_MUTED = "#8a94a6"
-PAGE_BG = "#eef1f5"
-CARD_BG = "#ffffff"
-BORDER = "#dfe4ec"
+@lru_cache(maxsize=1)
+def _logo_b64() -> str:
+    p = pathlib.Path(__file__).with_name("assets") / "bits_logo.png"
+    try:
+        return base64.b64encode(p.read_bytes()).decode()
+    except OSError:
+        return ""
 
-BLUE = "#4a89dc"
-BLUE_DARK = "#3a6fb0"
-GREEN = "#26a65b"
-RED = "#e0463c"
-ORANGE = "#e8871e"
-CYAN = "#1a9fb5"
+# --- Brand ------------------------------------------------------------------
+NAVY = "#011E4B"
+NAVY2 = "#0B2E6B"
+GOLD = "#F8A819"
+CYAN = "#0FC0DF"
+BRAND_RED = "#ED1C24"
 
-BRAND_NAVY = "#0b2e6b"
-BRAND_GOLD = "#e0a62e"
+# --- Ink & surface ----------------------------------------------------------
+INK = "#0E1A2B"
+SOFT = "#55647C"
+MUTED = "#8493A9"
+FAINT = "#C4CDDA"
+PAGE = "#F5F7FA"
+CARD = "#FFFFFF"
+BORDER = "#E1E6EE"
+LINE = "#EDF1F6"
+RED = "#C0392F"
 
-# Report table header fills, as OBER uses them
-HDR_BLACK = "#111827"
-HDR_RED = "#e8443a"
-HDR_ORANGE = "#ef8c2a"
+# --- Bands: reserved severity ramp, validated all-PASS ----------------------
+BAND_COLOR = {"H": "#178A52", "M": "#CAA11A", "L": "#E05A24", "VL": "#A02436",
+              "OK": "#7E8CA1"}
+BAND_LABEL = {"H": "High", "M": "Medium", "L": "Low", "VL": "Very Low",
+              "OK": "On target"}
+BAND_ORDER = ["VL", "L", "M", "H"]
+BAND_CUTS = {"VL": (0, 30), "L": (30, 60), "M": (60, 90), "H": (90, 100)}
 
-BAND_COLOR = {"H": "#1a9e4b", "M": "#e0a62e", "L": "#e8871e", "VL": "#d6392e"}
-BAND_LABEL = {"H": "High", "M": "Medium", "L": "Low", "VL": "Very Low"}
+# --- Offerings are an ordered sequence -> sequential ramp of ONE hue ---------
+SEQ = ["#B9C9E4", "#5B7FBF", "#011E4B"]
 
+# --- Chart series (categorical), validated all-PASS -------------------------
 CHART = ["#2E5AC4", "#C2860E", "#0E8DA3", "#8A4FD1", "#2F9E7A"]
+
+PRIMARY_NAV = ["CO / PO Mapping", "Assessment", "Report", "OBER+ 5R Loop"]
+STAGES = ["Report", "Reflect", "Recommend", "Redesign", "Reassess"]
 
 
 CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-html, body, [class*="css"], .stApp {{
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+html, body, [class*="css"], .stApp, input, select, textarea, button {{
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }}
-.stApp {{ background: {PAGE_BG}; }}
+.stApp {{ background: {PAGE}; }}
 #MainMenu, footer {{ visibility: hidden; }}
 header[data-testid="stHeader"] {{ background: transparent; height: 0; }}
-.block-container {{ padding-top: 1.1rem; padding-bottom: 3rem; max-width: 100%; }}
+section[data-testid="stSidebar"] {{ display: none; }}
+/* Content is inset 44px; the chrome bleeds back out with negative margins. */
+.block-container {{ padding: 0 44px 4rem 44px !important; max-width: 100% !important; }}
 
-/* ---------------- Left navigation ---------------- */
-section[data-testid="stSidebar"] {{ background: {NAV_BG}; width: 268px !important; }}
-section[data-testid="stSidebar"] > div {{ background: {NAV_BG}; }}
-section[data-testid="stSidebar"] * {{ color: {NAV_TEXT}; }}
-section[data-testid="stSidebar"] .block-container {{ padding: 0 0 2rem 0; }}
+/* ======================= Masthead ======================= */
+.mast {{ background: {NAVY}; padding: 0 44px; margin: 0 -44px; }}
+.mast-logo {{ height: 56px; width: auto; display: block; }}
+.mast-top {{ height: 92px; display: flex; align-items: center; justify-content: space-between; }}
+.mast-brand {{ display: flex; align-items: center; gap: 18px; }}
+.mast-rule {{ width: 1px; height: 44px; background: rgba(255,255,255,0.18); }}
+.mast-name {{ font-family: 'Sora', system-ui, sans-serif; font-size: 22px; font-weight: 800;
+              color: #FFFFFF; letter-spacing: -0.02em; line-height: 1.1; }}
+.mast-name .plus {{ color: {GOLD}; }}
+.mast-sub {{ font-size: 11.5px; font-weight: 600; color: #7E93B8; margin-top: 4px;
+             letter-spacing: 0.05em; }}
+.mast-right {{ display: flex; align-items: center; gap: 22px; }}
+.mast-sem {{ font-size: 14px; font-weight: 500; color: #7E93B8; }}
+.mast-user {{ font-size: 14.5px; font-weight: 700; color: #FFFFFF; }}
+.mast-logout {{ border: 1.5px solid rgba(255,255,255,0.28); color: #FFFFFF; font-size: 13px;
+                font-weight: 700; padding: 8px 18px; border-radius: 999px; }}
+.mast-nav {{ display: flex; gap: 34px; align-items: center; }}
+.mast-nav .t {{ font-size: 15px; font-weight: 600; color: #9DB0CE; padding: 15px 0; }}
+.mast-nav .t.on {{ font-size: 15px; font-weight: 800; color: #FFFFFF;
+                   border-bottom: 3px solid {GOLD}; }}
 
-.nav-brand {{
-    padding: 20px 18px 16px 18px;
-    font-size: 1.02rem; font-weight: 700; color: #ffffff !important;
-    letter-spacing: 0.02em; border-bottom: 1px solid rgba(255,255,255,0.07);
+/* ======================= Nav rows =======================
+   A marker div inside a Streamlit container is the only reliable way to scope
+   styling to the widgets in that container — an HTML wrapper written with
+   st.markdown does not contain the widgets that follow it. */
+div[data-testid="stLayoutWrapper"]:has(> div > div > div > div > div > div.nav-marker) {{
+    background: {NAVY}; margin: 0 -44px; padding: 0 44px 12px 44px;
+    width: calc(100% + 88px) !important; max-width: none !important;
+    flex: 0 0 auto !important;
 }}
-.nav-brand .nav-plus {{ color: {BRAND_GOLD} !important; }}
-.nav-brand .nav-sub {{
-    display: block; font-size: 0.72rem; font-weight: 500; color: #8c9ab0 !important;
-    margin-top: 3px; letter-spacing: 0.01em;
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) {{
+    gap: 0 !important;
 }}
-.nav-group {{
-    padding: 15px 18px 7px 18px; font-size: 0.73rem; font-weight: 700;
-    letter-spacing: 0.09em; text-transform: uppercase; color: #7f8ea6 !important;
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) div[data-testid="stButton"] {{
+    margin: 0 !important;
+}}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button {{
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    color: #9DB0CE !important; font-size: 15px !important; font-weight: 600 !important;
+    padding: 10px 0 !important; min-height: 0 !important;
+    border-bottom: 3px solid transparent !important; border-radius: 0 !important;
+}}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button:hover {{
+    color: #FFFFFF !important;
+}}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button[kind="primary"] {{
+    color: #FFFFFF !important; font-weight: 800 !important;
+    border-bottom-color: {GOLD} !important;
 }}
 
-/* Sidebar buttons rendered as OBER's nav rows */
-section[data-testid="stSidebar"] div[data-testid="stButton"] {{ margin: 0 !important; }}
-section[data-testid="stSidebar"] .stButton > button {{
-    background: transparent !important; color: {NAV_TEXT} !important;
-    border: none !important; border-left: 3px solid transparent !important;
-    border-radius: 0 !important; text-align: left !important;
-    justify-content: flex-start !important;
-    padding: 8px 18px !important; min-height: 0 !important;
-    font-size: 0.855rem !important; font-weight: 500 !important;
-    transition: background .12s ease;
+div[data-testid="stLayoutWrapper"]:has(> div > div > div > div > div > div.sub-marker) {{
+    background: {CARD}; margin: 0 -44px 26px -44px; padding: 13px 44px;
+    width: calc(100% + 88px) !important; max-width: none !important;
+    flex: 0 0 auto !important; border-bottom: 1px solid {BORDER};
 }}
-section[data-testid="stSidebar"] .stButton > button:hover {{
-    background: {NAV_BG_HOVER} !important; color: #ffffff !important;
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) {{
+    gap: 0 !important;
 }}
-section[data-testid="stSidebar"] .stButton > button:focus {{ box-shadow: none !important; }}
-section[data-testid="stSidebar"] .stButton > button[kind="primary"] {{
-    background: {NAV_ACTIVE} !important; color: #ffffff !important;
-    border-left-color: {BRAND_GOLD} !important; font-weight: 600 !important;
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) div[data-testid="stButton"] {{
+    margin: 0 !important;
 }}
-section[data-testid="stSidebar"] div[data-testid="stImage"] {{ padding: 16px 0 0 18px; }}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button {{
+    background: #F2F5F9 !important; border: none !important; color: {SOFT} !important;
+    font-size: 14px !important; font-weight: 600 !important; border-radius: 999px !important;
+    padding: 10px 16px !important; min-height: 0 !important; box-shadow: none !important;
+}}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button:hover {{
+    background: #E6ECF4 !important; color: {INK} !important;
+}}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button[kind="primary"] {{
+    background: {NAVY} !important; color: #FFFFFF !important; font-weight: 700 !important;
+}}
+.nav-marker, .sub-marker {{ display: none; }}
 
-/* ---------------- Top bar ---------------- */
-.topbar {{
-    background: {CARD_BG}; border: 1px solid {BORDER}; border-radius: 6px;
-    padding: 10px 18px; margin-bottom: 14px;
-    display: flex; align-items: center; justify-content: space-between;
-    box-shadow: 0 1px 2px rgba(16,24,40,.04);
-}}
-.topbar-left {{ display: flex; align-items: center; gap: 12px; }}
-.topbar-mark {{ font-size: 1.0rem; font-weight: 700; color: {BRAND_NAVY}; letter-spacing: -0.01em; }}
-.topbar-mark span {{ display:block; font-size:0.66rem; font-weight:500; color:{INK_MUTED}; letter-spacing:0.02em; }}
-.topbar-right {{ display: flex; align-items: center; gap: 14px; }}
-.topbar-user {{ font-size: 0.86rem; font-weight: 700; color: {CYAN}; }}
-.topbar-logout {{
-    background: {RED}; color: #fff !important; font-size: 0.76rem; font-weight: 600;
-    padding: 4px 13px; border-radius: 4px;
-}}
-.topbar-sem {{ font-size: 0.78rem; color: {INK_MUTED}; }}
+/* ======================= Body ======================= */
+.page-title {{ font-family: 'Sora', system-ui, sans-serif; font-size: 36px; font-weight: 800;
+               letter-spacing: -0.035em; color: {NAVY}; line-height: 1.1; }}
+.page-sub {{ font-size: 16px; color: {SOFT}; margin: 9px 0 22px 0; }}
 
-/* ---------------- Breadcrumb ---------------- */
-.crumb {{ margin: 2px 0 14px 2px; font-size: 1.06rem; font-weight: 700; color: {INK}; }}
-.crumb .crumb-page {{ color: {ORANGE}; margin-left: 8px; }}
-
-/* ---------------- Content card ---------------- */
-/* st.container(border=True) styled as OBER's white content panel */
-div[data-testid="stVerticalBlockBorderWrapper"]:has(> div > div > div.oberplus-card-marker) {{
-    background: {CARD_BG}; border: 1px solid {BORDER} !important; border-radius: 6px;
-    padding: 16px 20px 18px 20px; margin-bottom: 14px;
-    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+/* ======================= Cards ======================= */
+div[data-testid="stVerticalBlockBorderWrapper"]:has(> div > div > div.ob-card) {{
+    background: {CARD}; border: 1px solid {BORDER} !important; border-radius: 14px;
+    padding: 20px 24px 22px 24px; margin-bottom: 16px;
 }}
-.oberplus-card-marker {{ display: none; }}
-.card {{
-    background: {CARD_BG}; border: 1px solid {BORDER}; border-radius: 6px;
-    padding: 18px 20px 20px 20px; margin-bottom: 16px;
-    box-shadow: 0 1px 2px rgba(16,24,40,.04);
-}}
-.card-title {{ font-size: 0.95rem; font-weight: 700; color: {INK}; margin-bottom: 14px; }}
-.card-note {{ font-size: 0.83rem; color: {INK_SOFT}; line-height: 1.55; margin-bottom: 12px; }}
-.field-label {{ font-size: 0.79rem; color: {INK_SOFT}; font-weight: 600; margin-bottom: 3px; }}
+.ob-card {{ display: none; }}
+.card-title {{ font-size: 17px; font-weight: 700; color: {INK}; letter-spacing: -0.015em;
+               margin-bottom: 16px; }}
+.card-note {{ font-size: 14.5px; color: {SOFT}; line-height: 1.6; margin-bottom: 14px; }}
+.field-label {{ font-size: 12px; font-weight: 800; letter-spacing: 0.09em; color: {MUTED};
+                margin-bottom: 7px; text-transform: uppercase; }}
 
-/* ---------------- Streamlit control restyling ---------------- */
+/* ======================= Controls ======================= */
 div[data-testid="stSelectbox"] label, div[data-testid="stTextInput"] label,
 div[data-testid="stNumberInput"] label, div[data-testid="stFileUploader"] label {{
-    font-size: 0.79rem !important; color: {INK_SOFT} !important; font-weight: 600 !important;
+    font-size: 12px !important; color: {MUTED} !important; font-weight: 800 !important;
+    letter-spacing: 0.09em; text-transform: uppercase;
 }}
 div[data-baseweb="select"] > div {{
-    border-radius: 4px !important; border-color: {BORDER} !important; min-height: 36px;
+    border-radius: 10px !important; border-color: #D6DDE8 !important; min-height: 44px;
+    font-weight: 600; font-size: 15px;
 }}
 .stTextInput input, .stNumberInput input {{
-    border-radius: 4px !important; border-color: {BORDER} !important; font-size: 0.86rem;
+    border-radius: 10px !important; border-color: #D6DDE8 !important; font-size: 15px;
+    font-weight: 500; padding: 10px 14px !important;
 }}
-/* read-only rows in CLO Entry / Evaluation Components stay legible */
 .stTextInput input:disabled, .stNumberInput input:disabled {{
-    -webkit-text-fill-color: {INK} !important; color: {INK} !important;
-    background: #f7f9fc !important; opacity: 1 !important;
+    -webkit-text-fill-color: {SOFT} !important; color: {SOFT} !important;
+    background: #F7F9FC !important; opacity: 1 !important;
 }}
 .stButton > button {{
-    background: {BLUE}; color: #fff; border: none; border-radius: 4px;
-    font-size: 0.82rem; font-weight: 600; padding: 6px 16px; min-height: 34px;
-    transition: background .12s ease;
+    background: {NAVY}; color: #FFFFFF; border: none; border-radius: 10px;
+    font-size: 14.5px; font-weight: 700; padding: 11px 22px; min-height: 44px;
 }}
-.stButton > button:hover {{ background: {BLUE_DARK}; color: #fff; }}
-.stButton > button:focus {{ box-shadow: none; color: #fff; }}
+.stButton > button:hover {{ background: {NAVY2}; color: #FFFFFF; }}
+.stButton > button:focus {{ box-shadow: none; color: #FFFFFF; }}
 .stDownloadButton > button {{
-    background: {GREEN}; color: #fff; border: none; border-radius: 4px;
-    font-size: 0.82rem; font-weight: 600; padding: 6px 16px; min-height: 34px;
+    background: {CARD}; color: {INK} !important; border: 1.5px solid {BORDER};
+    border-radius: 10px; font-size: 14.5px; font-weight: 700; padding: 10px 20px; min-height: 44px;
 }}
-.stDownloadButton > button:hover {{ background: #1e8c4c; color: #fff; }}
+.stDownloadButton > button:hover {{ background: #F7F9FC; border-color: {MUTED}; }}
 div[data-testid="stFileUploaderDropzone"] {{
-    background: #f8fafc; border: 1px dashed {BORDER}; border-radius: 4px; padding: 10px 14px;
+    background: #FBFCFE; border: 1.5px dashed #CBD5E3; border-radius: 12px; padding: 16px 20px;
 }}
-div[data-testid="stAlert"] {{ border-radius: 5px; font-size: 0.85rem; }}
+div[data-testid="stAlert"] {{ border-radius: 11px; font-size: 14.5px; }}
+div[data-testid="stExpander"] {{ border: 1px solid {BORDER}; border-radius: 12px; background: {CARD}; }}
+div[data-testid="stExpander"] summary {{ font-size: 14.5px; font-weight: 700; color: {SOFT}; }}
+div[data-testid="stExpander"] p, div[data-testid="stExpander"] li {{
+    font-size: 14.5px; color: {SOFT}; line-height: 1.65;
+}}
 
-/* ---------------- Data tables ---------------- */
-.tbl-wrap {{ overflow-x: auto; border: 1px solid {BORDER}; border-radius: 5px; margin-bottom: 14px; }}
-table.ober {{ width: 100%; border-collapse: collapse; font-size: 0.845rem; background: {CARD_BG}; }}
-table.ober th {{
-    background: {HDR_BLACK}; color: #fff; text-align: left; font-weight: 600;
-    padding: 9px 13px; white-space: nowrap; font-size: 0.80rem;
+/* ======================= Tables ======================= */
+.tbl {{ overflow-x: auto; border: 1px solid {BORDER}; border-radius: 14px; background: {CARD}; }}
+table.t {{ width: 100%; border-collapse: collapse; font-size: 14.5px; }}
+table.t th {{
+    background: {NAVY}; color: #9DB0CE; font-size: 12px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 16px;
+    text-align: center; white-space: nowrap;
 }}
-table.ober td {{
-    padding: 9px 13px; border-bottom: 1px solid #eef1f5; color: {INK_SOFT}; white-space: nowrap;
+table.t th.lead {{ text-align: left; }}
+table.t td {{
+    padding: 14px 16px; border-bottom: 1px solid {LINE}; text-align: center;
+    color: {SOFT}; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap;
 }}
-table.ober tr:last-child td {{ border-bottom: none; }}
-table.ober tr:hover td {{ background: #f9fbfd; }}
-table.ober td.num {{ text-align: right; font-variant-numeric: tabular-nums; }}
-table.ober td.strong {{ color: {INK}; font-weight: 600; }}
+table.t td.lead {{ text-align: left; color: {INK}; font-weight: 600; white-space: normal; }}
+table.t tr:last-child td {{ border-bottom: none; }}
+table.t tr.total td {{ background: #FBF9F2; font-weight: 800; color: {INK}; }}
+table.t tr.grand td {{ background: {NAVY}; color: #FFFFFF; font-weight: 800; }}
+table.t tr.grand td.gold {{ color: {GOLD}; }}
+table.t td.kv {{ text-align: left; white-space: normal; }}
+table.t td.ok {{ color: {BAND_COLOR["H"]}; font-weight: 600; }}
+table.t td.bad {{ color: {RED}; font-weight: 600; }}
+table.t td.t1 {{ background: #FDF5F4; }} table.t td.t2 {{ background: #F2FAF5; }}
+table.t td.t3 {{ background: #F3F6FD; }} table.t td.t4 {{ background: #FCF8EE; }}
+table.t td.t5 {{ background: #F5F3FA; }}
+.cap {{ color: #FFFFFF; font-weight: 700; font-size: 15px; text-align: center; padding: 12px;
+        border-radius: 14px 14px 0 0; }}
+.cap.red {{ background: #D64535; }} .cap.orange {{ background: #E08128; }}
 
-/* Report tables with OBER's coloured caption bars */
-.rpt-cap {{
-    color: #fff; font-weight: 700; font-size: 0.86rem; text-align: center;
-    padding: 8px 12px; border-radius: 5px 5px 0 0;
-}}
-.rpt-cap.red {{ background: {HDR_RED}; }}
-.rpt-cap.orange {{ background: {HDR_ORANGE}; }}
-table.rpt {{ width: 100%; border-collapse: collapse; font-size: 0.845rem; background: {CARD_BG}; }}
-table.rpt th {{
-    background: #f1f4f8; color: {INK}; font-weight: 700; font-size: 0.80rem;
-    padding: 8px 12px; border: 1px solid #e3e8f0; text-align: center; white-space: nowrap;
-}}
-table.rpt th.lead {{ text-align: left; }}
-table.rpt td {{
-    padding: 8px 12px; border: 1px solid #e9edf4; text-align: center;
-    color: {INK_SOFT}; font-variant-numeric: tabular-nums; white-space: nowrap;
-}}
-table.rpt td.lead {{ text-align: left; color: {INK}; }}
-table.rpt tr.total td {{ background: #fdf6e3; font-weight: 700; color: {INK}; }}
-table.rpt tr.grand td {{ background: {HDR_BLACK}; color: #fff; font-weight: 700; }}
-table.rpt td.tint1 {{ background: #fdf1f2; }}
-table.rpt td.tint2 {{ background: #eefaf1; }}
-table.rpt td.tint3 {{ background: #eef4fd; }}
-table.rpt td.ok {{ background: #eefaf1; }}
-table.rpt td.bad {{ background: #fdeeed; }}
-
-/* Matrix entry grid (weightage / mark distribution / mapping) */
-.mx-head, .mx-row {{ display: grid; gap: 6px; align-items: center; margin-bottom: 5px; }}
-.mx-head div {{
-    font-size: 0.74rem; font-weight: 700; color: {INK}; text-align: center;
-    background: #f1f4f8; padding: 7px 4px; border-radius: 3px; line-height: 1.25;
-}}
-.mx-head div.lead, .mx-row div.lead {{ text-align: left; }}
-.mx-total {{
-    font-size: 0.86rem; font-weight: 700; text-align: center; padding: 7px 4px;
-    border-radius: 3px; font-variant-numeric: tabular-nums;
-}}
-.mx-total.ok {{ background: #d9f2e2; color: #14663a; }}
-.mx-total.bad {{ background: #fbdedc; color: #9c2b23; }}
-.mx-lead {{ font-size: 0.85rem; font-weight: 600; color: {INK}; padding: 7px 2px; }}
-div[data-testid="stNumberInput"] input {{ text-align: center; padding: 4px 6px !important; }}
+/* ======================= Matrix entry ======================= */
+.mx-h {{ font-size: 11.5px; font-weight: 800; letter-spacing: 0.07em; color: {MUTED};
+         text-align: center; background: #F7F9FC; border-radius: 7px; padding: 9px 4px;
+         line-height: 1.35; text-transform: uppercase; }}
+.mx-h.lead {{ text-align: left; padding-left: 12px; }}
+.mx-l {{ font-size: 15px; font-weight: 700; color: {INK}; padding: 10px 0 10px 4px; }}
+.mx-t {{ font-size: 15px; font-weight: 800; text-align: center; padding: 10px 4px;
+         border-radius: 7px; font-variant-numeric: tabular-nums; }}
+.mx-t.ok {{ background: #E7F6EE; color: #10693D; }}
+.mx-t.bad {{ background: #FDECEA; color: #99251C; }}
+.mx-t.navy {{ background: {NAVY}; color: #FFFFFF; }}
+div[data-testid="stNumberInput"] input {{ text-align: center; padding: 8px 6px !important; }}
 div[data-testid="stNumberInput"] button {{ display: none; }}
 
-/* ---------------- Chips / status ---------------- */
-.chip {{
-    display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px;
-    border-radius: 999px; font-size: 0.76rem; font-weight: 700;
-}}
-.chip-flag {{ background: #fdeeed; color: {RED}; }}
-.chip-ok {{ background: #eef2f7; color: {INK_MUTED}; }}
-.pill-formal {{ background: #e6f6ec; color: #14663a; }}
-.pill-detected {{ background: #fdf1de; color: #8a5a12; }}
+/* ======================= Chips, stats, meters ======================= */
+.chip {{ display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+         border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }}
+.stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+          gap: 16px; margin-bottom: 4px; }}
+.stat {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 14px; padding: 18px 20px; }}
+.stat.accent {{ border-left: 4px solid var(--a, {GOLD}); }}
+.stat .k {{ font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+            color: {MUTED}; }}
+.stat .v {{ font-family: 'Sora', system-ui, sans-serif; font-size: 34px; font-weight: 800;
+            color: {NAVY}; margin-top: 9px; line-height: 1.1; letter-spacing: -0.035em; }}
+.stat .v.sm {{ font-size: 20px; letter-spacing: -0.02em; }}
+.stat .v .faint {{ color: {FAINT}; }}
+.stat .s {{ font-size: 13.5px; color: {MUTED}; margin-top: 8px; font-weight: 600; }}
+.hero {{ font-family: 'Sora', system-ui, sans-serif; font-size: 64px; font-weight: 800;
+         line-height: 1; letter-spacing: -0.045em; }}
 
-/* ---------------- Stat row ---------------- */
-.stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }}
-.stat {{
-    background: {CARD_BG}; border: 1px solid {BORDER}; border-top: 3px solid {BRAND_GOLD};
-    border-radius: 6px; padding: 14px 16px;
-}}
-.stat .k {{ font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {INK_MUTED}; }}
-.stat .v {{ font-size: 1.65rem; font-weight: 700; color: {INK}; line-height: 1.15; margin-top: 3px; }}
-.stat .s {{ font-size: 0.79rem; color: {INK_MUTED}; margin-top: 2px; }}
+.meter {{ display: flex; align-items: center; gap: 11px; }}
+.meter-tr {{ position: relative; flex: 1; height: 10px; border-radius: 999px; overflow: hidden;
+             min-width: 90px; }}
+.meter-fl {{ height: 100%; }}
+.meter-v {{ font-size: 14px; font-weight: 800; color: {INK}; min-width: 44px; text-align: right;
+            font-variant-numeric: tabular-nums; }}
 
-/* ---------------- Record card (R3 decisions / R4 log) ---------------- */
-.rec {{
-    background: {CARD_BG}; border: 1px solid {BORDER}; border-left: 4px solid var(--a, {BLUE});
-    border-radius: 6px; padding: 14px 18px; margin-bottom: 12px;
-}}
-.rec-head {{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 7px; }}
-.rec-id {{ font-weight: 700; color: {INK}; font-size: 0.9rem; }}
-.rec-meta {{ font-size: 0.8rem; color: {INK_MUTED}; }}
-.rec-body {{ font-size: 0.87rem; color: {INK_SOFT}; line-height: 1.55; margin-bottom: 10px; }}
-.ba {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 9px; }}
-.ba-box {{ background: #f7f9fc; border-radius: 4px; padding: 9px 12px; font-size: 0.83rem; color: {INK_SOFT}; }}
-.ba-box b {{ display: block; font-size: 0.69rem; text-transform: uppercase; letter-spacing: 0.06em; color: {INK_MUTED}; margin-bottom: 3px; }}
+.bandscale {{ display: flex; height: 32px; border-radius: 8px; overflow: hidden; }}
+.bandscale div {{ display: flex; align-items: center; justify-content: center; color: #FFFFFF;
+                  font-size: 12.5px; font-weight: 700; }}
+.bandticks {{ display: flex; margin-top: 6px; font-size: 12px; font-weight: 600; color: {MUTED};
+              font-variant-numeric: tabular-nums; }}
 
-.menu-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-bottom: 6px; }}
-.menu-card {{
-    background: {CARD_BG}; border: 1px solid {BORDER}; border-left: 3px solid var(--a, {BLUE});
-    border-radius: 5px; padding: 11px 14px;
-}}
-.menu-card .t {{ font-weight: 600; color: {INK}; font-size: 0.87rem; margin-bottom: 3px; }}
-.menu-card .c {{ font-size: 0.77rem; color: {INK_MUTED}; font-style: italic; line-height: 1.4; }}
+/* ======================= CLO cards ======================= */
+.clocard {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 14px;
+            padding: 18px 24px; margin-bottom: 12px;
+            display: grid; grid-template-columns: 190px 1fr 178px 150px;
+            align-items: center; gap: 26px; }}
+.clocard.alert {{ background: #FFFBF9; border: 1.5px solid {BAND_COLOR["L"]}; }}
+.clocard .cid {{ font-size: 17px; font-weight: 800; color: {INK}; }}
+.clocard .cdesc {{ font-size: 13.5px; color: {MUTED}; margin-top: 4px; line-height: 1.4; }}
+.offs {{ display: flex; gap: 10px; }}
+.off {{ flex-grow: 1; border-radius: 9px; padding: 10px 0; text-align: center; }}
+.off .ov {{ font-size: 17px; font-weight: 700; }}
+.off .ol {{ font-size: 11.5px; color: {MUTED}; margin-top: 3px; }}
+.off.good {{ background: #F1F8F4; }} .off.good .ov {{ color: {BAND_COLOR["H"]}; }}
+.off.miss {{ background: #FDF1F0; }} .off.miss .ov {{ color: {RED}; }}
+.off.bad {{ background: #FBE7E5; }} .off.bad .ov {{ color: {BAND_COLOR["VL"]}; }}
+
+/* ======================= Record cards ======================= */
+.rec {{ background: {CARD}; border: 1px solid {BORDER}; border-left: 4px solid var(--a, {NAVY2});
+        border-radius: 14px; padding: 18px 22px; margin-bottom: 12px; }}
+.rec-h {{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }}
+.rec-id {{ font-size: 15.5px; font-weight: 800; color: {INK}; }}
+.rec-m {{ font-size: 13.5px; color: {MUTED}; }}
+.rec-b {{ font-size: 14.5px; color: {SOFT}; line-height: 1.6; margin-bottom: 14px; }}
+.ba {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }}
+.ba-x {{ background: #F7F9FC; border-radius: 10px; padding: 13px 15px; font-size: 14px;
+         color: {SOFT}; line-height: 1.5; }}
+.ba-x b {{ display: block; font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em;
+           color: {MUTED}; margin-bottom: 5px; text-transform: uppercase; }}
+
+.menu {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }}
+.menu-c {{ background: {CARD}; border: 1px solid {BORDER}; border-left: 3px solid var(--a, {NAVY2});
+           border-radius: 11px; padding: 14px 16px; }}
+.menu-c .t {{ font-size: 14.5px; font-weight: 700; color: {INK}; line-height: 1.35; }}
+.menu-c .c {{ font-size: 12.5px; color: {MUTED}; margin-top: 6px; line-height: 1.45; }}
+
+.legend {{ display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }}
+.legend span.i {{ display: flex; align-items: center; gap: 7px; font-size: 13px;
+                  font-weight: 600; color: {SOFT}; }}
+.legend span.sw {{ width: 12px; height: 12px; border-radius: 3px; }}
 </style>
 """
 
 
-from contextlib import contextmanager
-import streamlit as st
+# ---------------------------------------------------------------------------
+# Chrome
+# ---------------------------------------------------------------------------
+
+def masthead_html(user: str, semester: str) -> str:
+    b64 = _logo_b64()
+    logo = (f'<img class="mast-logo" src="data:image/png;base64,{b64}" alt="BITS Pilani Dubai">'
+            f'<div class="mast-rule"></div>') if b64 else ""
+    return (f'<div class="mast"><div class="mast-top"><div class="mast-brand">{logo}'
+            f'<div><div class="mast-name">OBER<span class="plus">+</span></div>'
+            f'<div class="mast-sub">BITS PILANI · DUBAI CAMPUS</div></div></div>'
+            f'<div class="mast-right"><span class="mast-sem">{semester}</span>'
+            f'<span class="mast-user">{user}</span>'
+            f'<span class="mast-logout">Logout</span></div></div></div>')
+
+
+def page_head(title: str, sub: str = "") -> str:
+    s = f'<div class="page-sub">{sub}</div>' if sub else ""
+    return f'<div class="page-title">{title}</div>{s}'
 
 
 @contextmanager
-def card(title: str = "", note: str = "", title_right: str = ""):
-    """OBER's white content panel. Uses a real Streamlit container so anything
-    rendered inside it (widgets included) sits within the panel."""
+def card(title: str = "", note: str = "", right: str = ""):
     with st.container(border=True):
-        st.markdown('<div class="oberplus-card-marker"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="ob-card"></div>', unsafe_allow_html=True)
         if title:
-            right = (f'<span style="float:right;font-weight:500;font-size:0.78rem;'
-                     f'color:{INK_MUTED};">{title_right}</span>') if title_right else ""
-            st.markdown(f'<div class="card-title">{title}{right}</div>', unsafe_allow_html=True)
+            r = (f'<span style="float:right;font-size:13px;font-weight:600;color:{MUTED};">'
+                 f'{right}</span>') if right else ""
+            st.markdown(f'<div class="card-title">{title}{r}</div>', unsafe_allow_html=True)
         if note:
             st.markdown(f'<div class="card-note">{note}</div>', unsafe_allow_html=True)
         yield
 
 
-def topbar(user: str, semester: str) -> str:
-    return (
-        f'<div class="topbar"><div class="topbar-left">'
-        f'<div class="topbar-mark">BITS Pilani<span>Dubai Campus</span></div>'
-        f'</div><div class="topbar-right">'
-        f'<span class="topbar-sem">{semester}</span>'
-        f'<span class="topbar-user">{user}</span>'
-        f'<span class="topbar-logout">Logout</span>'
-        f'</div></div>'
-    )
+# ---------------------------------------------------------------------------
+# Bands
+# ---------------------------------------------------------------------------
+
+def band_chip(code: str, suffix: str = "") -> str:
+    c = BAND_COLOR.get(code, MUTED)
+    bg = "#EEF1F5" if code == "OK" else f"{c}1f"
+    return (f'<span class="chip" style="background:{bg};color:{c};">'
+            f'{BAND_LABEL.get(code, code)}{suffix}</span>')
 
 
-def crumb(page: str) -> str:
-    return f'<div class="crumb">BPDC OBER+<span class="crumb-page">{page}</span></div>'
+def band_meter(ratio, code: str) -> str:
+    if ratio is None:
+        return '<span class="chip" style="background:#EEF1F5;color:#7E8CA1;">On target</span>'
+    c = BAND_COLOR[code]
+    pos = max(0.0, min(100.0, float(ratio)))
+    cuts = "".join(f'<div style="position:absolute;left:{x}%;top:0;width:1px;height:100%;'
+                   f'background:rgba(255,255,255,.85);"></div>' for x in (30, 60, 90))
+    return (f'<div class="meter"><div class="meter-tr" style="background:{c}24;">'
+            f'<div class="meter-fl" style="width:{pos}%;background:{c};"></div>{cuts}</div>'
+            f'<span class="meter-v">{pos:.0f}%</span></div>')
 
 
-def band_chip(code: str) -> str:
-    c = BAND_COLOR.get(code, INK_MUTED)
-    return (f'<span class="chip" style="background:{c}1f;color:{c};">'
-            f'{BAND_LABEL.get(code, code)}</span>')
+def band_scale(target: float) -> str:
+    zones = "".join(f'<div style="width:{BAND_CUTS[b][1] - BAND_CUTS[b][0]}%;'
+                    f'background:{BAND_COLOR[b]};">{BAND_LABEL[b]}</div>' for b in BAND_ORDER)
+    ticks = ('<div style="width:30%;">0</div><div style="width:30%;">30</div>'
+             '<div style="width:30%;">60</div>'
+             '<div style="width:10%;display:flex;justify-content:space-between;">'
+             '<span>90</span><span>100</span></div>')
+    return f'<div class="bandscale">{zones}</div><div class="bandticks">{ticks}</div>'
 
 
-def stat(k: str, v: str, s: str = "") -> str:
+# ---------------------------------------------------------------------------
+# Figures
+# ---------------------------------------------------------------------------
+
+def stat(k: str, v: str, s: str = "", small: bool = False, accent: str = "") -> str:
+    cls = "stat accent" if accent else "stat"
+    style = f' style="--a:{accent};"' if accent else ""
     sub = f'<div class="s">{s}</div>' if s else ""
-    return f'<div class="stat"><div class="k">{k}</div><div class="v">{v}</div>{sub}</div>'
+    vc = "v sm" if small else "v"
+    return f'<div class="{cls}"{style}><div class="k">{k}</div><div class="{vc}">{v}</div>{sub}</div>'
 
 
-def table(headers, rows, classes=None) -> str:
-    """Black-header data table. rows: list of lists of pre-formatted strings.
-    classes: optional list of per-column css classes."""
-    classes = classes or [""] * len(headers)
-    head = "".join(f"<th>{h}</th>" for h in headers)
-    body = ""
-    for r in rows:
-        tds = "".join(f'<td class="{classes[i] if i < len(classes) else ""}">{c}</td>'
-                      for i, c in enumerate(r))
-        body += f"<tr>{tds}</tr>"
-    return f'<div class="tbl-wrap"><table class="ober"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+def stats_row(items) -> str:
+    return f'<div class="stats">{"".join(items)}</div>'
 
 
-def report_table(caption, caption_color, headers, rows, row_classes=None, cell_classes=None) -> str:
-    """OBER report table with a coloured caption bar.
-    rows: list of lists. row_classes: per-row tr class. cell_classes: per-row list of td classes."""
-    cap = f'<div class="rpt-cap {caption_color}">{caption}</div>' if caption else ""
-    head = "".join(
-        f'<th class="{"lead" if i == 0 else ""}">{h}</th>' for i, h in enumerate(headers))
+def legend(items) -> str:
+    out = '<div class="legend">'
+    for lab, col in items:
+        out += f'<span class="i"><span class="sw" style="background:{col};"></span>{lab}</span>'
+    return out + "</div>"
+
+
+# ---------------------------------------------------------------------------
+# Tables
+# ---------------------------------------------------------------------------
+
+def table(headers, rows, row_classes=None, cell_classes=None,
+          caption="", caption_color="") -> str:
+    cap = f'<div class="cap {caption_color}">{caption}</div>' if caption else ""
+    radius = "0 0 14px 14px" if caption else "14px"
+    if any(str(h).strip() for h in headers):
+        cells = "".join(f'<th class="{"lead" if i == 0 else ""}">{h}</th>'
+                        for i, h in enumerate(headers))
+        head = f'<thead><tr>{cells}</tr></thead>'
+    else:
+        head = ""  # a two-column key/value table needs no header strip
     body = ""
     for ri, r in enumerate(rows):
         rc = (row_classes[ri] if row_classes and ri < len(row_classes) else "") or ""
         cc = cell_classes[ri] if cell_classes and ri < len(cell_classes) else None
         tds = ""
         for i, c in enumerate(r):
-            base = "lead" if i == 0 else ""
-            extra = (cc[i] if cc and i < len(cc) else "") or ""
-            cls = " ".join(x for x in (base, extra) if x)
+            cls = " ".join(x for x in (("lead" if i == 0 else ""),
+                                       (cc[i] if cc and i < len(cc) else "") or "") if x)
             tds += f'<td class="{cls}">{c}</td>'
         body += f'<tr class="{rc}">{tds}</tr>'
-    return (f'{cap}<div class="tbl-wrap" style="border-radius:0 0 5px 5px;">'
-            f'<table class="rpt"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>')
+    return (f'{cap}<div class="tbl" style="border-radius:{radius};">'
+            f'<table class="t">{head}<tbody>{body}</tbody></table></div>')
+
+
+# ---------------------------------------------------------------------------
+# Cards
+# ---------------------------------------------------------------------------
+
+def clo_card(cid, desc, offerings, target, shortfall_html, band_html, alert=False) -> str:
+    offs = ""
+    for val, lab in offerings:
+        k = "good" if val >= target else ("bad" if val < target * 0.5 else "miss")
+        offs += f'<div class="off {k}"><div class="ov">{val:.1f}%</div><div class="ol">{lab}</div></div>'
+    return (f'<div class="clocard{" alert" if alert else ""}">'
+            f'<div><div class="cid">{cid}</div><div class="cdesc">{desc}</div></div>'
+            f'<div class="offs">{offs}</div>'
+            f'<div>{shortfall_html}</div>'
+            f'<div style="text-align:right;">{band_html}</div></div>')
 
 
 def menu_grid(items, accent) -> str:
-    cards = "".join(
-        f'<div class="menu-card" style="--a:{accent};"><div class="t">{n}</div>'
-        f'<div class="c">{c}</div></div>' for n, c in items)
-    return f'<div class="menu-grid">{cards}</div>'
+    cards = "".join(f'<div class="menu-c" style="--a:{accent};"><div class="t">{n}</div>'
+                    f'<div class="c">{c}</div></div>' for n, c in items)
+    return f'<div class="menu">{cards}</div>'
 
 
-def record_card(rid, badge, badge_class, meta, body, before=None, after=None, footer="", accent=BLUE) -> str:
+def record_card(rid, badge, badge_bg, badge_fg, meta, body,
+                before=None, after=None, footer="", accent=NAVY2) -> str:
     ba = ""
     if before is not None:
-        ba = (f'<div class="ba"><div class="ba-box"><b>Before</b>{before}</div>'
-              f'<div class="ba-box"><b>After</b>{after}</div></div>')
-    foot = f'<div class="rec-meta">{footer}</div>' if footer else ""
-    return (
-        f'<div class="rec" style="--a:{accent};"><div class="rec-head">'
-        f'<span class="rec-id">{rid}</span>'
-        f'<span class="chip {badge_class}">{badge}</span>'
-        f'<span class="rec-meta">{meta}</span></div>'
-        f'<div class="rec-body">{body}</div>{ba}{foot}</div>'
-    )
+        ba = (f'<div class="ba"><div class="ba-x"><b>Before</b>{before}</div>'
+              f'<div class="ba-x"><b>After</b>{after}</div></div>')
+    foot = f'<div class="rec-m">{footer}</div>' if footer else ""
+    return (f'<div class="rec" style="--a:{accent};"><div class="rec-h">'
+            f'<span class="rec-id">{rid}</span>'
+            f'<span class="chip" style="background:{badge_bg};color:{badge_fg};">{badge}</span>'
+            f'<span class="rec-m">{meta}</span></div>'
+            f'<div class="rec-b">{body}</div>{ba}{foot}</div>')

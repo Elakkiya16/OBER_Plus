@@ -32,16 +32,23 @@ that component's CLOs, fill it in, upload it back. A blank cell is read as
 ABSENT. Uploaded marks are listed with per-student component totals.
 
 ### Report
+- **Overview** — the report catalogue: what can be generated, who reads it,
+  which visualisation it carries and what it downloads as.
 - **Marks Report** — every student's marks by component and CLO, exportable.
-- **CLO Report** — per-component attainment per CLO, the weighted-average
-  attainment row, and course attainment.
-- **PLO Report** — CLO attainment carried into each mapped PLO, with the
-  program-level average.
+  Table only; raw per-student records are not chart material.
+- **CLO Report** — a diverging bar of each CLO's distance from target (the
+  reader's question is *above or below, and by how much*), then per-component
+  attainment per CLO, the weighted-average row, and course attainment.
+- **PLO Report** — columns for the PLOs this course actually feeds, read
+  against the target rule, then the CLO→PLO grid with the programme-level
+  average. An unmapped PLO is left out rather than drawn as a zero.
 
 ### OBER+ · 5R loop
 - **R1 Report** — the same per-offering computation, accumulated across
   offerings and gated on *offering count* rather than calendar time, so an
   elective run twice a year clears the window in ~1.5 years instead of 3.
+  Offerings are discrete sittings, so they are grouped columns on a
+  light→dark ramp with time, not a joined line.
 - **R2 Reflect** — flags anything below target in ≥2 of the last 3 offerings,
   scores severity as the average shortfall across only the offerings that
   missed, and bands it High / Medium / Low / Very Low using CAA's own KPI 2.1
@@ -55,7 +62,9 @@ ABSENT. Uploaded marks are listed with per-student component totals.
   no recommendation behind them. Both keep full before/after content.
 - **R5 Reassess** — the offering right after a logged redesign against the one
   right before it. Gap Closure = (shortfall before − shortfall after) ÷
-  shortfall before, banded on the same cutoffs as R2.
+  shortfall before, banded on the same cutoffs as R2. Every logged redesign is
+  drawn as one dumbbell row — the standard before→after form — so all
+  interventions are comparable on a single axis against the target rule.
 
 ## How attainment is computed
 

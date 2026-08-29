@@ -36,7 +36,17 @@ SEMESTERS = [
 # Offering order, oldest first — the R1 longitudinal window.
 OFFERING_ORDER = ["First Semester 2024-25", "Second Semester 2024-25", "First Semester 2025-26"]
 
-TARGET_ATTAINMENT = 60.0
+# Default attainment target. Source: her own "Target Sheet" in
+# CAA Materials/CS F531 ToC_CAA.xlsx, section "III. Target Setting", which sets
+# "Target Level %" = 60 for every evaluation component of CS F351 (I Sem
+# 2024-25). That sheet's own note — "Target Grades can be fixed based on subject
+# difficulty" — is why this is a per-course default here rather than a constant.
+DEFAULT_TARGET = 60.0
+TARGET_SOURCE = ('Default 60% from "III. Target Setting" in your CS F531 ToC_CAA.xlsx '
+                 'Target Sheet, which sets Target Level % = 60 for every component. '
+                 'That sheet notes targets can be fixed by subject difficulty, so it is '
+                 'editable per course here.')
+TARGET_ATTAINMENT = DEFAULT_TARGET  # kept for callers that want the default
 
 
 # ---------------------------------------------------------------------------
@@ -140,11 +150,13 @@ OFFERING_PERFORMANCE = {
         "CLO4": [0.49, 0.50, 0.66],   # flagged in R2, redesigned in R4, recovers in R5
         "CLO5": [0.65, 0.62, 0.64],
     },
+    # CS F459 deliberately spans the full H/M/L/VL range, so the banding is
+    # legible as a scale rather than as one repeated label.
     "31316": {
-        "CLO1": [0.74, 0.76, 0.75],
-        "CLO2": [0.70, 0.71, 0.72],
-        "CLO3": [0.67, 0.68, 0.69],
-        "CLO4": [0.66, 0.67, 0.68],
+        "CLO1": [0.74, 0.76, 0.75],   # never below target      -> On target
+        "CLO2": [0.57, 0.55, 0.58],   # just under, persistently -> High
+        "CLO3": [0.42, 0.40, 0.45],   # clearly under            -> Medium
+        "CLO4": [0.20, 0.17, 0.22],   # severe                   -> Low
     },
 }
 
@@ -158,6 +170,17 @@ SEED_RECOMMENDATIONS = [
         "evidence": "Below target in 2 of 3 offerings; average shortfall 10.5 pts; band Medium.",
         "decided_by": "Dr. A. Rao",
         "decided_on": "2025-06-11",
+        "status": "Implemented",
+    },
+    {
+        "id": "R3-2025-011",
+        "course": "31316",
+        "clo": "CLO4",
+        "category": "Industry-sourced problems as project/assessment content",
+        "citation": "Naseer et al., Nature Scientific Reports, 2025",
+        "evidence": "Below target in 3 of 3 offerings; average shortfall 41.4 pts; band Low.",
+        "decided_by": "Dr. E. Rajasekar",
+        "decided_on": "2025-06-20",
         "status": "Implemented",
     },
 ]
@@ -191,6 +214,23 @@ SEED_CHANGE_LOG = [
         "after": "Design context-free grammars and pushdown automata.",
         "changed_by": "Dr. S. Menon",
         "changed_at": "2025-07-02",
+    },
+    {
+        # The honest case: a recorded, well-grounded intervention that barely
+        # moved the number. R5 has to be able to say so — a loop that only ever
+        # reports success is not a loop.
+        "id": "REC-2025-021",
+        "course": "31316",
+        "clo": "CLO4",
+        "path": "formal",
+        "recommendation_id": "R3-2025-011",
+        "offering_boundary": "Second Semester 2024-25 → First Semester 2025-26",
+        "what_changed": "Replaced the synthetic capstone dataset with an industry-supplied "
+                        "defect-inspection set and re-scoped the project brief around it.",
+        "before": "Project: synthetic benchmark dataset, fixed brief",
+        "after": "Project: industry-supplied dataset, partner-reviewed brief",
+        "changed_by": "Dr. E. Rajasekar",
+        "changed_at": "2025-07-10",
     },
 ]
 
@@ -286,6 +326,7 @@ def _build_course(cid, code, title, clos, components, weightage, mark_dist, mapp
         "roster": roster,
         "handout": f"{cid}_handout_First_Semester_2025-26.pdf",
         "instructor_by_offering": instructor_by_offering,
+        "target": DEFAULT_TARGET,
         "uploaded_components": [],
     }
     # Marks for each of the three offerings; the active semester is index 2.
