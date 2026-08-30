@@ -64,12 +64,16 @@ CSF351_COMPONENTS = [
 ]
 
 # Weightage Distribution (%) — each CLO row totals 100
+# Two rules hold at once: every CLO row totals exactly 100, and no component
+# column exceeds 100 — a component cannot carry more than its own whole weight
+# across the CLOs that use it. Compre touches every CLO, so its share per CLO
+# has to stay small enough for the column to close at 100.
 CSF351_WEIGHTAGE = {
-    "CLO1": {"Quiz": 60, "Midsem": 20, "Compre": 20},
+    "CLO1": {"Quiz": 80, "Midsem": 10, "Compre": 10},
     "CLO2": {"Midsem": 80, "Compre": 20},
-    "CLO3": {"Exit Quiz": 25, "Compre": 75},
-    "CLO4": {"Problem Solving": 30, "Compre": 70},
-    "CLO5": {"Assignment": 40, "Compre": 60},
+    "CLO3": {"Exit Quiz": 80, "Compre": 20},
+    "CLO4": {"Problem Solving": 70, "Compre": 30},
+    "CLO5": {"Assignment": 80, "Compre": 20},
 }
 
 # Mark Distribution — each component column totals that component's total marks
@@ -102,9 +106,9 @@ CSF459_COMPONENTS = [
 ]
 
 CSF459_WEIGHTAGE = {
-    "CLO1": {"Quiz": 50, "Midsem": 30, "Compre": 20},
-    "CLO2": {"Midsem": 40, "Lab": 40, "Compre": 20},
-    "CLO3": {"Lab": 30, "Compre": 70},
+    "CLO1": {"Quiz": 60, "Midsem": 20, "Compre": 20},
+    "CLO2": {"Midsem": 50, "Lab": 30, "Compre": 20},
+    "CLO3": {"Lab": 70, "Compre": 30},
     "CLO4": {"Project": 70, "Compre": 30},
 }
 

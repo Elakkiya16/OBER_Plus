@@ -62,10 +62,10 @@ INK = "#0E1A2B"
 SOFT = "#55647C"
 MUTED = "#8493A9"
 FAINT = "#C4CDDA"
-PAGE = "#F5F7FA"
+PAGE = "#FFFFFF"        # white, not grey
 CARD = "#FFFFFF"
-BORDER = "#E1E6EE"
-LINE = "#EDF1F6"
+BORDER = "#D2E4F2"      # sky-tinted, not grey
+LINE = "#E8F3FB"
 RED = RED_D          # target rules and error text
 
 # --- Bands: reserved severity ramp, validated all-PASS ----------------------
@@ -77,7 +77,8 @@ BAND_ORDER = ["VL", "L", "M", "H"]
 BAND_CUTS = {"VL": (0, 30), "L": (30, 60), "M": (60, 90), "H": (90, 100)}
 
 # --- Offerings are an ordered sequence -> sequential ramp of ONE hue ---------
-SEQ = ["#DCEDF9", "#87C6E9", "#1B6FA8"]
+# Three offerings, three campus colours: innovate -> achieve -> lead.
+SEQ = ["#FAB001", "#87C6E9", "#E40613"]
 
 # --- Chart series (categorical), validated all-PASS -------------------------
 CHART = ["#2E5AC4", "#C2860E", "#0E8DA3", "#8A4FD1", "#2F9E7A"]
@@ -170,12 +171,12 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker)
     margin: 0 !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button {{
-    background: #F2F5F9 !important; border: none !important; color: {SOFT} !important;
+    background: #EAF4FB !important; border: none !important; color: {SOFT} !important;
     font-size: 14px !important; font-weight: 600 !important; border-radius: 999px !important;
     padding: 10px 16px !important; min-height: 0 !important; box-shadow: none !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button:hover {{
-    background: #E6ECF4 !important; color: {INK} !important;
+    background: #D8EBF8 !important; color: {INK} !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button[kind="primary"] {{
     background: {AMBER} !important; color: {INK} !important; font-weight: 800 !important;
@@ -191,6 +192,7 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker)
 
 /* ======================= Cards ======================= */
 div[data-testid="stVerticalBlockBorderWrapper"]:has(> div > div > div.ob-card) {{
+    box-shadow: 0 1px 2px rgba(14,26,43,0.04);
     background: {CARD}; border: 1px solid {BORDER} !important; border-radius: 14px;
     padding: 20px 24px 22px 24px; margin-bottom: 16px;
 }}
@@ -208,22 +210,31 @@ div[data-testid="stNumberInput"] label, div[data-testid="stFileUploader"] label 
     letter-spacing: 0.09em; text-transform: uppercase;
 }}
 div[data-baseweb="select"] > div {{
-    border-radius: 10px !important; border-color: #D6DDE8 !important; min-height: 44px;
+    border-radius: 10px !important; border-color: #B5D2E6 !important; min-height: 44px;
     font-weight: 600; font-size: 15px;
 }}
+/* The border lives on the wrapper Streamlit renders inside the field, not on
+   the <input> itself — on a white page it defaults to white, so the field
+   disappears unless that wrapper is styled. */
+div[data-testid="stNumberInput"] > div > div,
+div[data-testid="stTextInput"] > div > div,
+div[data-baseweb="input"], div[data-baseweb="base-input"] {{
+    border-radius: 10px !important; border: 1.5px solid #B5D2E6 !important;
+    background: {CARD} !important;
+}}
 .stTextInput input, .stNumberInput input {{
-    border-radius: 10px !important; border-color: #D6DDE8 !important; font-size: 15px;
-    font-weight: 500; padding: 10px 14px !important;
+    border-radius: 10px !important; border-color: #B5D2E6 !important; font-size: 15px;
+    font-weight: 500; padding: 10px 14px !important; background: transparent !important;
 }}
 .stTextInput input:disabled, .stNumberInput input:disabled {{
     -webkit-text-fill-color: {SOFT} !important; color: {SOFT} !important;
-    background: #F7F9FC !important; opacity: 1 !important;
+    background: #F4FAFE !important; opacity: 1 !important;
 }}
 .stButton > button {{
-    background: {CARD}; color: {INK}; border: 1.5px solid #D6DDE8; border-radius: 10px;
+    background: {CARD}; color: {INK}; border: 1.5px solid #CBDDEB; border-radius: 10px;
     font-size: 14.5px; font-weight: 700; padding: 11px 22px; min-height: 44px;
 }}
-.stButton > button:hover {{ background: #F7F9FC; border-color: {MUTED}; color: {INK}; }}
+.stButton > button:hover {{ background: #F4FAFE; border-color: {MUTED}; color: {INK}; }}
 .stButton > button:focus {{ box-shadow: none; color: {INK}; }}
 /* One amber action per screen — the thing the screen is for. Row actions stay
    quiet so a Delete never looks like the primary move. */
@@ -235,9 +246,9 @@ div[data-baseweb="select"] > div {{
     background: {CARD}; color: {INK} !important; border: 1.5px solid {BORDER};
     border-radius: 10px; font-size: 14.5px; font-weight: 700; padding: 10px 20px; min-height: 44px;
 }}
-.stDownloadButton > button:hover {{ background: #F7F9FC; border-color: {MUTED}; }}
+.stDownloadButton > button:hover {{ background: #F4FAFE; border-color: {MUTED}; }}
 div[data-testid="stFileUploaderDropzone"] {{
-    background: #FBFCFE; border: 1.5px dashed #CBD5E3; border-radius: 12px; padding: 16px 20px;
+    background: #F7FBFE; border: 1.5px dashed #B9D6EA; border-radius: 12px; padding: 16px 20px;
 }}
 div[data-testid="stAlert"] {{ border-radius: 11px; font-size: 14.5px; }}
 div[data-testid="stExpander"] {{ border: 1px solid {BORDER}; border-radius: 12px; background: {CARD}; }}
@@ -276,7 +287,7 @@ table.t td.t5 {{ background: #F5F3FA; }}
 
 /* ======================= Matrix entry ======================= */
 .mx-h {{ font-size: 11.5px; font-weight: 800; letter-spacing: 0.07em; color: {MUTED};
-         text-align: center; background: #F7F9FC; border-radius: 7px; padding: 9px 4px;
+         text-align: center; background: #F4FAFE; border-radius: 7px; padding: 9px 4px;
          line-height: 1.35; text-transform: uppercase; }}
 .mx-h.lead {{ text-align: left; padding-left: 12px; }}
 .mx-l {{ font-size: 15px; font-weight: 700; color: {INK}; padding: 10px 0 10px 4px; }}
@@ -342,7 +353,7 @@ div[data-testid="stNumberInput"] button {{ display: none; }}
 .rec-m {{ font-size: 13.5px; color: {MUTED}; }}
 .rec-b {{ font-size: 14.5px; color: {SOFT}; line-height: 1.6; margin-bottom: 14px; }}
 .ba {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }}
-.ba-x {{ background: #F7F9FC; border-radius: 10px; padding: 13px 15px; font-size: 14px;
+.ba-x {{ background: #F4FAFE; border-radius: 10px; padding: 13px 15px; font-size: 14px;
          color: {SOFT}; line-height: 1.5; }}
 .ba-x b {{ display: block; font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em;
            color: {MUTED}; margin-bottom: 5px; text-transform: uppercase; }}

@@ -221,10 +221,12 @@ def _weightage_matrix(course):
     clos = [c["name"] for c in course["clos"]]
     if not comps or not clos:
         return
-    with S.card("I. Weightage Distribution (%)", right="Each CLO row must total 100%"):
+    with S.card("I. Weightage Distribution (%)",
+                right="Each CLO row totals 100% · each component column stays at or under 100%"):
         widths = [1.7] + [1.0] * len(comps) + [1.0]
         _matrix_header(comps, widths)
-        all_ok = True
+        rows_ok = True
+        col_totals = {c: 0 for c in comps}
         for clo in clos:
             row = st.columns(widths)
             row[0].markdown(f'<div class="mx-l">{clo}</div>', unsafe_allow_html=True)
@@ -239,20 +241,41 @@ def _weightage_matrix(course):
                 else:
                     course["weightage"].get(clo, {}).pop(comp, None)
                 total += int(v)
+                col_totals[comp] += int(v)
             ok = total == 100
-            all_ok &= ok
+            rows_ok &= ok
             row[-1].markdown(f'<div class="mx-t {"ok" if ok else "bad"}">{total}</div>',
                              unsafe_allow_html=True)
+
+        # Column totals: a component cannot carry more than its whole weight
+        # across the CLOs that use it.
+        foot = st.columns(widths)
+        foot[0].markdown('<div class="mx-l">Total</div>', unsafe_allow_html=True)
+        cols_ok = True
+        for i, comp in enumerate(comps):
+            ok = col_totals[comp] <= 100
+            cols_ok &= ok
+            foot[i + 1].markdown(
+                f'<div class="mx-t {"ok" if ok else "bad"}">{col_totals[comp]}</div>',
+                unsafe_allow_html=True)
+        foot[-1].markdown('<div class="mx-t navy">&mdash;</div>', unsafe_allow_html=True)
+
+        all_ok = rows_ok and cols_ok
+        problems = []
+        if not rows_ok:
+            problems.append("every CLO row must total exactly 100%")
+        if not cols_ok:
+            over = ", ".join(f"{c} = {col_totals[c]}" for c in comps if col_totals[c] > 100)
+            problems.append(f"these component columns are over 100%: {over}")
         b = st.columns([1.7, 6])
         if b[0].button("Save weightages", key="save_w", width="stretch", type="primary"):
             if all_ok:
                 st.success("Weightages saved.")
             else:
-                st.error("Fix CLO rows so each totals exactly 100%.")
+                st.error("Fix " + "; and ".join(problems) + ".")
         if not all_ok:
             b[1].markdown(f'<div style="color:{S.RED};font-size:14px;padding-top:12px;">'
-                          f'Fix CLO rows so each totals exactly 100%.</div>',
-                          unsafe_allow_html=True)
+                          f'Fix {"; and ".join(problems)}.</div>', unsafe_allow_html=True)
 
 
 def _mark_matrix(course, grand):
@@ -601,7 +624,7 @@ def _plo_bars(plo_att, target):
     for i, (plo, v) in enumerate(items):
         bx = PADL + i * gw + (gw - barw) / 2
         by, bh = ytop(v), ytop(0) - ytop(v)
-        col = S.SKY_D if v >= target else S.BAND_COLOR["L"]
+        col = S.BAND_COLOR["H"] if v >= target else S.BAND_COLOR["L"]
         out.append(f'<rect x="{bx:.1f}" y="{by:.1f}" width="{barw:.1f}" height="{bh:.1f}" '
                    f'rx="4" fill="{col}"/>')
         out.append(f'<text x="{bx + barw / 2:.1f}" y="{by - 8:.1f}" text-anchor="middle" '

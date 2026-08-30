@@ -389,10 +389,10 @@ def _dumbbell(rows, target):
                    f'<text x="58" y="{cy + 5:.1f}" font-size="12.5" fill="{S.MUTED}" '
                    f'font-family="Manrope,sans-serif">{rec}</text>')
         out.append(f'<line x1="{dx(before):.1f}" y1="{cy:.1f}" x2="{dx(after):.1f}" '
-                   f'y2="{cy:.1f}" stroke="{S.SEQ[1]}" stroke-width="3" stroke-linecap="round"/>')
-        out.append(f'<circle cx="{dx(before):.1f}" cy="{cy:.1f}" r="7" fill="{S.SEQ[0]}" '
+                   f'y2="{cy:.1f}" stroke="{S.SKY}" stroke-width="4" stroke-linecap="round"/>')
+        out.append(f'<circle cx="{dx(before):.1f}" cy="{cy:.1f}" r="7" fill="{S.AMBER}" '
                    f'stroke="#FFFFFF" stroke-width="2.5"/>'
-                   f'<circle cx="{dx(after):.1f}" cy="{cy:.1f}" r="7" fill="{S.SKY_D}" '
+                   f'<circle cx="{dx(after):.1f}" cy="{cy:.1f}" r="7" fill="{S.RED_T}" '
                    f'stroke="#FFFFFF" stroke-width="2.5"/>')
         ctxt = f"{closure:.0f}%" if closure is not None else "n/a"
         out.append(f'<text x="{W - PADR + 16}" y="{cy + 5:.1f}" font-size="15" font-weight="800" '
@@ -430,8 +430,8 @@ def page_r5(store):
 
     with S.card("Every logged redesign, before → after",
                 right="before → after"):
-        st.markdown(S.legend([("Offering before the redesign", S.SEQ[0]),
-                              ("Offering after", S.SKY_D)]), unsafe_allow_html=True)
+        st.markdown(S.legend([("Offering before the redesign", S.AMBER),
+                              ("Offering after", S.RED_T)]), unsafe_allow_html=True)
         st.markdown(_dumbbell(rows, t), unsafe_allow_html=True)
 
     sel = next(x for x in rows if x[1] == rec["id"])
