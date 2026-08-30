@@ -6,9 +6,12 @@ is either section pills (OBER's screens) or the numbered 1-2-3-4-5 stage strip
 (the 5R loop), so the loop reads as a sequence rather than five more menu items.
 White content panels below.
 
-Colour is the BITS Pilani AIRE+ palette sampled from the seal in her own deck —
-navy #011E4B / #0B2E6B, gold #F8A819, cyan #0FC0DF, red #ED1C24. Gold is chrome
-only and cyan is the interactive accent, so gold never does two jobs.
+Colour: navy is chrome ONLY — the masthead and the primary nav bar sit on it and
+nothing else does. Everything below that bar is carried by the campus tagline
+palette sampled from tagline.jpg: innovate amber #FAB001, achieve sky #87C6E9,
+lead red #E40613, with darkened in-hue variants where type needs contrast on
+white. The masthead logo is the supplied "with white text" lockup, used
+untouched — knocking white out of it erases the wordmark.
 
 Band colours are a separate reserved 4-step severity ramp, validated all-PASS by
 the dataviz validator (lightness band, chroma floor, CVD adjacent separation,
@@ -34,11 +37,25 @@ def _logo_b64() -> str:
         return ""
 
 # --- Brand ------------------------------------------------------------------
+# Navy is chrome ONLY: the masthead and the primary nav bar sit on it and
+# nothing else does. Everything below that bar is carried by the campus tagline
+# palette, sampled from tagline.jpg — innovate amber, achieve sky, lead red.
 NAVY = "#011E4B"
 NAVY2 = "#0B2E6B"
-GOLD = "#F8A819"
-CYAN = "#0FC0DF"
-BRAND_RED = "#ED1C24"
+
+AMBER = "#FAB001"     # innovate
+SKY = "#87C6E9"       # achieve
+RED_T = "#E40613"     # lead
+
+# Darkened in-hue variants, for type and marks that need contrast on white.
+AMBER_D = "#A66E00"
+SKY_D = "#1B6FA8"
+RED_D = "#C1050F"
+
+# Names the rest of the app already uses, pointed at the tagline palette.
+GOLD = AMBER
+CYAN = SKY
+BRAND_RED = RED_T
 
 # --- Ink & surface ----------------------------------------------------------
 INK = "#0E1A2B"
@@ -49,7 +66,7 @@ PAGE = "#F5F7FA"
 CARD = "#FFFFFF"
 BORDER = "#E1E6EE"
 LINE = "#EDF1F6"
-RED = "#C0392F"
+RED = RED_D          # target rules and error text
 
 # --- Bands: reserved severity ramp, validated all-PASS ----------------------
 BAND_COLOR = {"H": "#178A52", "M": "#CAA11A", "L": "#E05A24", "VL": "#A02436",
@@ -60,7 +77,7 @@ BAND_ORDER = ["VL", "L", "M", "H"]
 BAND_CUTS = {"VL": (0, 30), "L": (30, 60), "M": (60, 90), "H": (90, 100)}
 
 # --- Offerings are an ordered sequence -> sequential ramp of ONE hue ---------
-SEQ = ["#B9C9E4", "#5B7FBF", "#011E4B"]
+SEQ = ["#DCEDF9", "#87C6E9", "#1B6FA8"]
 
 # --- Chart series (categorical), validated all-PASS -------------------------
 CHART = ["#2E5AC4", "#C2860E", "#0E8DA3", "#8A4FD1", "#2F9E7A"]
@@ -85,16 +102,18 @@ section[data-testid="stSidebar"] {{ display: none; }}
 .block-container {{ padding: 0 44px 4rem 44px !important; max-width: 100% !important; }}
 
 /* ======================= Masthead =======================
-   The tri-colour rule is the campus device from the innovate/achieve/lead
-   banner: gold, cyan and red across the top, navy carrying everything under
-   it. All masthead type is white. */
+   The rule across the top is the innovate/achieve/lead device. Navy lives here
+   and in the nav bar below it, and nowhere else. All masthead type is white,
+   and the supplied logo already carries the white BITS Pilani Dubai Campus
+   wordmark, so it is used untouched — knocking white out of it erases the
+   wordmark. */
 .mast {{ background: {NAVY}; padding: 0 44px; margin: 0 -44px; }}
 .brandrule {{ display: flex; height: 6px; margin: 0 -44px; }}
 .brandrule i {{ flex: 1; }}
-.mast-logo {{ height: 74px; width: auto; display: block; }}
-.mast-top {{ height: 112px; display: flex; align-items: center; justify-content: space-between; }}
+.mast-logo {{ height: 104px; width: auto; display: block; }}
+.mast-top {{ height: 140px; display: flex; align-items: center; justify-content: space-between; }}
 .mast-brand {{ display: flex; align-items: center; gap: 20px; }}
-.mast-rule {{ width: 1px; height: 50px; background: rgba(255,255,255,0.22); }}
+.mast-rule {{ width: 1px; height: 66px; background: rgba(255,255,255,0.22); }}
 .mast-name {{ font-family: 'Sora', system-ui, sans-serif; font-size: 23px; font-weight: 800;
               color: #FFFFFF; letter-spacing: -0.02em; line-height: 1.1; }}
 .mast-name .plus {{ color: {GOLD}; }}
@@ -159,7 +178,7 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker)
     background: #E6ECF4 !important; color: {INK} !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button[kind="primary"] {{
-    background: {NAVY} !important; color: #FFFFFF !important; font-weight: 700 !important;
+    background: {AMBER} !important; color: {INK} !important; font-weight: 800 !important;
 }}
 .nav-marker, .sub-marker {{ display: none; }}
 
@@ -167,7 +186,7 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker)
 .page-head {{ display: flex; align-items: center; gap: 16px; }}
 .page-head .tick {{ width: 7px; height: 38px; border-radius: 4px; flex: none; }}
 .page-title {{ font-family: 'Sora', system-ui, sans-serif; font-size: 36px; font-weight: 800;
-               letter-spacing: -0.035em; color: {NAVY}; line-height: 1.1; }}
+               letter-spacing: -0.035em; color: {INK}; line-height: 1.1; }}
 .page-sub {{ font-size: 16px; color: {SOFT}; margin: 9px 0 22px 0; }}
 
 /* ======================= Cards ======================= */
@@ -201,11 +220,17 @@ div[data-baseweb="select"] > div {{
     background: #F7F9FC !important; opacity: 1 !important;
 }}
 .stButton > button {{
-    background: {NAVY}; color: #FFFFFF; border: none; border-radius: 10px;
+    background: {CARD}; color: {INK}; border: 1.5px solid #D6DDE8; border-radius: 10px;
     font-size: 14.5px; font-weight: 700; padding: 11px 22px; min-height: 44px;
 }}
-.stButton > button:hover {{ background: {NAVY2}; color: #FFFFFF; }}
-.stButton > button:focus {{ box-shadow: none; color: #FFFFFF; }}
+.stButton > button:hover {{ background: #F7F9FC; border-color: {MUTED}; color: {INK}; }}
+.stButton > button:focus {{ box-shadow: none; color: {INK}; }}
+/* One amber action per screen — the thing the screen is for. Row actions stay
+   quiet so a Delete never looks like the primary move. */
+.stButton > button[kind="primary"] {{
+    background: {AMBER}; color: {INK}; border: none;
+}}
+.stButton > button[kind="primary"]:hover {{ background: #E8A200; color: {INK}; }}
 .stDownloadButton > button {{
     background: {CARD}; color: {INK} !important; border: 1.5px solid {BORDER};
     border-radius: 10px; font-size: 14.5px; font-weight: 700; padding: 10px 20px; min-height: 44px;
@@ -225,7 +250,7 @@ div[data-testid="stExpander"] p, div[data-testid="stExpander"] li {{
 .tbl {{ overflow-x: auto; border: 1px solid {BORDER}; border-radius: 14px; background: {CARD}; }}
 table.t {{ width: 100%; border-collapse: collapse; font-size: 14.5px; }}
 table.t th {{
-    background: {NAVY}; color: #9DB0CE; font-size: 12px; font-weight: 800;
+    background: {SKY}; color: {INK}; font-size: 12px; font-weight: 800;
     letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 16px;
     text-align: center; white-space: nowrap;
 }}
@@ -237,7 +262,7 @@ table.t td {{
 table.t td.lead {{ text-align: left; color: {INK}; font-weight: 600; white-space: normal; }}
 table.t tr:last-child td {{ border-bottom: none; }}
 table.t tr.total td {{ background: #FBF9F2; font-weight: 800; color: {INK}; }}
-table.t tr.grand td {{ background: {NAVY}; color: #FFFFFF; font-weight: 800; }}
+table.t tr.grand td {{ background: {SKY_D}; color: #FFFFFF; font-weight: 800; }}
 table.t tr.grand td.gold {{ color: {GOLD}; }}
 table.t td.kv {{ text-align: left; white-space: normal; }}
 table.t td.ok {{ color: {BAND_COLOR["H"]}; font-weight: 600; }}
@@ -247,7 +272,7 @@ table.t td.t3 {{ background: #F3F6FD; }} table.t td.t4 {{ background: #FCF8EE; }
 table.t td.t5 {{ background: #F5F3FA; }}
 .cap {{ color: #FFFFFF; font-weight: 700; font-size: 15px; text-align: center; padding: 12px;
         border-radius: 14px 14px 0 0; }}
-.cap.red {{ background: #D64535; }} .cap.orange {{ background: #E08128; }}
+.cap.red {{ background: {RED_T}; }} .cap.orange {{ background: {AMBER_D}; }}
 
 /* ======================= Matrix entry ======================= */
 .mx-h {{ font-size: 11.5px; font-weight: 800; letter-spacing: 0.07em; color: {MUTED};
@@ -259,7 +284,7 @@ table.t td.t5 {{ background: #F5F3FA; }}
          border-radius: 7px; font-variant-numeric: tabular-nums; }}
 .mx-t.ok {{ background: #E7F6EE; color: #10693D; }}
 .mx-t.bad {{ background: #FDECEA; color: #99251C; }}
-.mx-t.navy {{ background: {NAVY}; color: #FFFFFF; }}
+.mx-t.navy {{ background: {SKY_D}; color: #FFFFFF; }}
 div[data-testid="stNumberInput"] input {{ text-align: center; padding: 8px 6px !important; }}
 div[data-testid="stNumberInput"] button {{ display: none; }}
 
@@ -269,11 +294,11 @@ div[data-testid="stNumberInput"] button {{ display: none; }}
 .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
           gap: 16px; margin-bottom: 4px; }}
 .stat {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 14px; padding: 18px 20px; }}
-.stat.accent {{ border-left: 4px solid var(--a, {GOLD}); }}
+.stat.accent {{ border-left: 5px solid var(--a, {AMBER}); }}
 .stat .k {{ font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
             color: {MUTED}; }}
 .stat .v {{ font-family: 'Sora', system-ui, sans-serif; font-size: 34px; font-weight: 800;
-            color: {NAVY}; margin-top: 9px; line-height: 1.1; letter-spacing: -0.035em; }}
+            color: {INK}; margin-top: 9px; line-height: 1.1; letter-spacing: -0.035em; }}
 .stat .v.sm {{ font-size: 20px; letter-spacing: -0.02em; }}
 .stat .v .faint {{ color: {FAINT}; }}
 .stat .s {{ font-size: 13.5px; color: {MUTED}; margin-top: 8px; font-weight: 600; }}
@@ -310,7 +335,7 @@ div[data-testid="stNumberInput"] button {{ display: none; }}
 .off.bad {{ background: #FBE7E5; }} .off.bad .ov {{ color: {BAND_COLOR["VL"]}; }}
 
 /* ======================= Record cards ======================= */
-.rec {{ background: {CARD}; border: 1px solid {BORDER}; border-left: 4px solid var(--a, {NAVY2});
+.rec {{ background: {CARD}; border: 1px solid {BORDER}; border-left: 4px solid var(--a, {SKY_D});
         border-radius: 14px; padding: 18px 22px; margin-bottom: 12px; }}
 .rec-h {{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }}
 .rec-id {{ font-size: 15.5px; font-weight: 800; color: {INK}; }}
@@ -323,7 +348,7 @@ div[data-testid="stNumberInput"] button {{ display: none; }}
            color: {MUTED}; margin-bottom: 5px; text-transform: uppercase; }}
 
 .menu {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }}
-.menu-c {{ background: {CARD}; border: 1px solid {BORDER}; border-left: 3px solid var(--a, {NAVY2});
+.menu-c {{ background: {CARD}; border: 1px solid {BORDER}; border-left: 3px solid var(--a, {SKY_D});
            border-radius: 11px; padding: 14px 16px; }}
 .menu-c .t {{ font-size: 14.5px; font-weight: 700; color: {INK}; line-height: 1.35; }}
 .menu-c .c {{ font-size: 12.5px; color: {MUTED}; margin-top: 6px; line-height: 1.45; }}
@@ -344,24 +369,29 @@ def masthead_html(user: str, semester: str) -> str:
     b64 = _logo_b64()
     logo = (f'<img class="mast-logo" src="data:image/png;base64,{b64}" alt="BITS Pilani Dubai">'
             f'<div class="mast-rule"></div>') if b64 else ""
-    rule = (f'<div class="brandrule"><i style="background:{GOLD};"></i>'
-            f'<i style="background:{CYAN};"></i><i style="background:{BRAND_RED};"></i></div>')
+    rule = (f'<div class="brandrule"><i style="background:{AMBER};"></i>'
+            f'<i style="background:{SKY};"></i><i style="background:{RED_T};"></i></div>')
     return (f'<div class="mast">{rule}<div class="mast-top"><div class="mast-brand">{logo}'
             f'<div><div class="mast-name">OBER<span class="plus">+</span></div>'
-            f'<div class="mast-sub">BITS PILANI · DUBAI CAMPUS</div></div></div>'
+            f'<div class="mast-sub">OUTCOME-BASED EDUCATION &amp; REPORTING</div></div></div>'
             f'<div class="mast-right"><span class="mast-sem">{semester}</span>'
             f'<span class="mast-user">{user}</span>'
             f'<span class="mast-logout">Logout</span></div></div></div>')
 
 
-SECTION_COLOR = {"CO / PO Mapping": GOLD, "Assessment": CYAN,
-                 "Report": BRAND_RED, "OBER+ 5R Loop": NAVY2}
+SECTION_COLOR = {
+    "CO / PO Mapping": AMBER,
+    "Assessment": SKY,
+    "Report": RED_T,
+    # the loop touches all three stages of the tagline, so its tick carries all three
+    "OBER+ 5R Loop": f"linear-gradient(180deg,{AMBER} 0 33%,{SKY} 33% 66%,{RED_T} 66% 100%)",
+}
 
 
 def page_head(title: str, sub: str = "") -> str:
     """The rule beside the title carries the section's campus colour, so each
     part of the tool is recognisable before you read the heading."""
-    col = SECTION_COLOR.get(st.session_state.get("section", ""), NAVY2)
+    col = SECTION_COLOR.get(st.session_state.get("section", ""), AMBER)
     s = f'<div class="page-sub">{sub}</div>' if sub else ""
     return (f'<div class="page-head"><span class="tick" style="background:{col};"></span>'
             f'<div class="page-title">{title}</div></div>{s}')
@@ -425,7 +455,7 @@ def stat(k: str, v: str, s: str = "", small: bool = False, accent: str = "") -> 
     return f'<div class="{cls}"{style}><div class="k">{k}</div><div class="{vc}">{v}</div>{sub}</div>'
 
 
-BRAND_CYCLE = [GOLD, CYAN, BRAND_RED, NAVY2]
+BRAND_CYCLE = [AMBER, SKY, RED_T, SKY_D]
 
 
 def stats_row(items) -> str:
@@ -498,7 +528,7 @@ def menu_grid(items, accent) -> str:
 
 
 def record_card(rid, badge, badge_bg, badge_fg, meta, body,
-                before=None, after=None, footer="", accent=NAVY2) -> str:
+                before=None, after=None, footer="", accent=SKY_D) -> str:
     ba = ""
     if before is not None:
         ba = (f'<div class="ba"><div class="ba-x"><b>Before</b>{before}</div>'

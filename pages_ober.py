@@ -41,7 +41,7 @@ def page_handout(store):
                 f'<div style="display:flex;align-items:center;justify-content:space-between;'
                 f'gap:24px;background:#F7F9FC;border-radius:12px;padding:18px 22px;'
                 f'margin-top:6px;"><div style="display:flex;align-items:center;gap:16px;">'
-                f'<div style="width:44px;height:44px;border-radius:10px;background:{S.NAVY};'
+                f'<div style="width:44px;height:44px;border-radius:10px;background:{S.SKY_D};'
                 f'color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;'
                 f'justify-content:center;">PDF</div><div>'
                 f'<div style="font-size:15.5px;font-weight:700;color:{S.INK};">'
@@ -56,7 +56,7 @@ def page_handout(store):
     with S.card("Replace handout"):
         up = st.file_uploader("Choose a PDF or Word file", type=["pdf", "doc", "docx"],
                               key="ho_up")
-        if st.button("Upload", key="ho_btn"):
+        if st.button("Upload", key="ho_btn", type="primary"):
             if up is None:
                 st.warning("Choose a handout file first.")
             else:
@@ -121,7 +121,7 @@ def page_clo_entry(store):
         d = a[1].text_input("Description", key="new_clo_desc",
                             placeholder="Start with a Bloom's action verb")
         a[2].markdown('<div style="height:29px;"></div>', unsafe_allow_html=True)
-        if a[2].button("Add CLO", key="add_clo", width="stretch"):
+        if a[2].button("Add CLO", key="add_clo", width="stretch", type="primary"):
             if not n.strip():
                 st.warning("Enter a CLO name.")
             elif any(c["name"] == n.strip() for c in course["clos"]):
@@ -194,7 +194,7 @@ def page_components(store):
         nm = a[0].text_input("Name", key="ec_new_name", placeholder="e.g. Exit Quiz")
         tm = a[1].number_input("Total marks", min_value=0, step=1, value=0, key="ec_new_total")
         a[2].markdown('<div style="height:29px;"></div>', unsafe_allow_html=True)
-        if a[2].button("Add component", key="ec_add", width="stretch"):
+        if a[2].button("Add component", key="ec_add", width="stretch", type="primary"):
             if not nm.strip():
                 st.warning("Enter a component name.")
             elif any(c[0] == nm.strip() for c in course["components"]):
@@ -244,7 +244,7 @@ def _weightage_matrix(course):
             row[-1].markdown(f'<div class="mx-t {"ok" if ok else "bad"}">{total}</div>',
                              unsafe_allow_html=True)
         b = st.columns([1.7, 6])
-        if b[0].button("Save weightages", key="save_w", width="stretch"):
+        if b[0].button("Save weightages", key="save_w", width="stretch", type="primary"):
             if all_ok:
                 st.success("Weightages saved.")
             else:
@@ -294,7 +294,7 @@ def _mark_matrix(course, grand):
         gt = sum(col_totals.values())
         foot[-1].markdown(f'<div class="mx-t navy">{gt}</div>', unsafe_allow_html=True)
 
-        if st.button("Save mark distribution", key="save_m"):
+        if st.button("Save mark distribution", key="save_m", type="primary"):
             if all_ok:
                 st.success("Mark distribution saved.")
             else:
@@ -332,7 +332,7 @@ def page_mapping(store):
                     mapped.append(p)
                 elif not v and p in mapped:
                     mapped.remove(p)
-        if st.button("Save mapping", key="save_map"):
+        if st.button("Save mapping", key="save_map", type="primary"):
             st.success("CLO-PLO mapping saved.")
 
 
@@ -385,7 +385,7 @@ def page_marks_entry(store):
                 unsafe_allow_html=True)
             up = st.file_uploader("Marks file", type=["csv"], key="me_up",
                                   label_visibility="collapsed")
-            if up is not None and st.button("Upload marks", key="me_btn"):
+            if up is not None and st.button("Upload marks", key="me_btn", type="primary"):
                 try:
                     n = _ingest_marks(course, comp, up, clos_in)
                     st.success(f"Marks uploaded for {comp} — {n} students updated.")
@@ -445,7 +445,7 @@ def page_report_marks(store):
         with c[0]:
             course = course_picker(store, "rm_course")
         c[1].markdown('<div style="height:29px;"></div>', unsafe_allow_html=True)
-        if c[1].button("Generate report", key="rm_gen", width="stretch"):
+        if c[1].button("Generate report", key="rm_gen", width="stretch", type="primary"):
             st.session_state.rm_shown = True
 
     if not st.session_state.get("rm_shown"):
@@ -499,7 +499,7 @@ def page_report_clo(store):
         with c[0]:
             course = course_picker(store, "rc_course")
         c[1].markdown('<div style="height:29px;"></div>', unsafe_allow_html=True)
-        if c[1].button("Generate report", key="rc_gen", width="stretch"):
+        if c[1].button("Generate report", key="rc_gen", width="stretch", type="primary"):
             st.session_state.rc_shown = True
 
     if not st.session_state.get("rc_shown"):
@@ -601,7 +601,7 @@ def _plo_bars(plo_att, target):
     for i, (plo, v) in enumerate(items):
         bx = PADL + i * gw + (gw - barw) / 2
         by, bh = ytop(v), ytop(0) - ytop(v)
-        col = S.NAVY if v >= target else S.BAND_COLOR["L"]
+        col = S.SKY_D if v >= target else S.BAND_COLOR["L"]
         out.append(f'<rect x="{bx:.1f}" y="{by:.1f}" width="{barw:.1f}" height="{bh:.1f}" '
                    f'rx="4" fill="{col}"/>')
         out.append(f'<text x="{bx + barw / 2:.1f}" y="{by - 8:.1f}" text-anchor="middle" '
@@ -626,7 +626,7 @@ def page_report_plo(store):
         with c[0]:
             course = course_picker(store, "rp_course")
         c[1].markdown('<div style="height:29px;"></div>', unsafe_allow_html=True)
-        if c[1].button("Generate report", key="rp_gen", width="stretch"):
+        if c[1].button("Generate report", key="rp_gen", width="stretch", type="primary"):
             st.session_state.rp_shown = True
 
     if not st.session_state.get("rp_shown"):

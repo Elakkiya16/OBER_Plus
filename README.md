@@ -66,12 +66,14 @@ ABSENT. Uploaded marks are listed with per-student component totals.
 
 ## Interface
 
-The campus identity carries through: the gold / cyan / red rule across the top
-of the masthead is the innovate-achieve-lead device, each section's page title
-takes one of those colours so you can tell where you are before reading the
-heading, and every KPI tile takes the next colour in turn. Navy is the
-structure everything sits on. Band colours are separate and reserved — they
-mean severity, never decoration.
+Navy is chrome only: the masthead and the primary nav bar sit on it and nothing
+else does. Everything below that bar is carried by the campus tagline palette —
+innovate amber, achieve sky, lead red. The rule across the top of the masthead
+is that device; each section's page title takes one of the three so you can tell
+where you are before reading the heading; KPI tiles take the next colour in
+turn; table headers are sky; the one action a screen is for is amber, and row
+actions stay quiet so a Delete never looks like the primary move. Band colours
+are separate and reserved — they mean severity, never decoration.
 
 ## How attainment is computed
 

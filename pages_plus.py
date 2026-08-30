@@ -272,7 +272,7 @@ def page_r3(store):
             free = ""
             if pick.startswith("Instructor choice"):
                 free = st.text_input("Describe the action", key="r3_free")
-            if a[2].button("Record", key="r3_save", width="stretch"):
+            if a[2].button("Record", key="r3_save", width="stretch", type="primary"):
                 cite = dict(R3_STANDARD_MENU + R3_INNOVATIVE_MENU).get(
                     pick, "instructor choice — no citation")
                 rid = next_id("R3-2026", store["recommendations"])
@@ -339,7 +339,7 @@ def page_r4(store):
         before = b[0].text_input("Before", key="r4_before")
         after = b[1].text_input("After", key="r4_after")
         b[2].markdown('<div style="height:29px;"></div>', unsafe_allow_html=True)
-        if b[2].button("Add to log", key="r4_save", width="stretch"):
+        if b[2].button("Add to log", key="r4_save", width="stretch", type="primary"):
             if not what.strip():
                 st.warning("Describe what changed.")
             else:
@@ -392,7 +392,7 @@ def _dumbbell(rows, target):
                    f'y2="{cy:.1f}" stroke="{S.SEQ[1]}" stroke-width="3" stroke-linecap="round"/>')
         out.append(f'<circle cx="{dx(before):.1f}" cy="{cy:.1f}" r="7" fill="{S.SEQ[0]}" '
                    f'stroke="#FFFFFF" stroke-width="2.5"/>'
-                   f'<circle cx="{dx(after):.1f}" cy="{cy:.1f}" r="7" fill="{S.NAVY}" '
+                   f'<circle cx="{dx(after):.1f}" cy="{cy:.1f}" r="7" fill="{S.SKY_D}" '
                    f'stroke="#FFFFFF" stroke-width="2.5"/>')
         ctxt = f"{closure:.0f}%" if closure is not None else "n/a"
         out.append(f'<text x="{W - PADR + 16}" y="{cy + 5:.1f}" font-size="15" font-weight="800" '
@@ -431,7 +431,7 @@ def page_r5(store):
     with S.card("Every logged redesign, before → after",
                 right="before → after"):
         st.markdown(S.legend([("Offering before the redesign", S.SEQ[0]),
-                              ("Offering after", S.NAVY)]), unsafe_allow_html=True)
+                              ("Offering after", S.SKY_D)]), unsafe_allow_html=True)
         st.markdown(_dumbbell(rows, t), unsafe_allow_html=True)
 
     sel = next(x for x in rows if x[1] == rec["id"])
