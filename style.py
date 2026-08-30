@@ -147,9 +147,9 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker)
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button {{
     background: transparent !important; border: none !important; box-shadow: none !important;
-    color: #17457F !important; font-size: 16px !important; font-weight: 700 !important;
-    padding: 15px 0 13px 0 !important; min-height: 0 !important; letter-spacing: 0.005em;
-    border-bottom: 4px solid transparent !important; border-radius: 0 !important;
+    color: #143F76 !important; font-size: 19px !important; font-weight: 800 !important;
+    padding: 17px 0 14px 0 !important; min-height: 0 !important; letter-spacing: -0.005em;
+    border-bottom: 5px solid transparent !important; border-radius: 0 !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button:hover {{
     color: {NAVY} !important;
@@ -157,6 +157,9 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker)
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button[kind="primary"] {{
     color: {NAVY} !important; font-weight: 800 !important;
     border-bottom-color: {RED_T} !important;
+}}
+div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button p {{
+    font-size: 19px !important; font-weight: 800 !important;
 }}
 
 div[data-testid="stLayoutWrapper"]:has(> div > div > div > div > div > div.sub-marker) {{
@@ -386,7 +389,7 @@ def masthead_html(user: str) -> str:
             f'<div><div class="mast-name">OBER<span class="plus">+</span></div>'
             f'<div class="mast-sub">OUTCOME-BASED EDUCATION &amp; REPORTING</div></div></div>'
             f'<div class="mast-right"><span class="mast-user">{user}</span>'
-            f'<span class="mast-logout">Logout</span></div></div></div>')
+            f'<span class="mast-logout">Logout</span></div></div>{rule}</div>')
 
 
 SECTION_COLOR = {
