@@ -39,7 +39,7 @@ def page_handout(store):
         if course["handout"]:
             st.markdown(
                 f'<div style="display:flex;align-items:center;justify-content:space-between;'
-                f'gap:24px;background:#F7F9FC;border-radius:12px;padding:18px 22px;'
+                f'gap:24px;background:#F4FAFE;border-radius:12px;padding:18px 22px;'
                 f'margin-top:6px;"><div style="display:flex;align-items:center;gap:16px;">'
                 f'<div style="width:44px;height:44px;border-radius:10px;background:{S.SKY_D};'
                 f'color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;'
@@ -385,7 +385,7 @@ def page_marks_entry(store):
         c = st.columns(2)
         with c[0]:
             st.markdown(
-                f'<div style="background:#F7F9FC;border-radius:12px;padding:20px;">'
+                f'<div style="background:#F4FAFE;border-radius:12px;padding:20px;">'
                 f'<div style="font-size:15.5px;font-weight:700;color:{S.INK};">'
                 f'1 · Download the template</div>'
                 f'<div style="font-size:13.5px;color:{S.MUTED};margin-top:6px;line-height:1.5;">'
@@ -400,7 +400,7 @@ def page_marks_entry(store):
                                key="me_tpl")
         with c[1]:
             st.markdown(
-                f'<div style="background:#F7F9FC;border-radius:12px;padding:20px;">'
+                f'<div style="background:#F4FAFE;border-radius:12px;padding:20px;">'
                 f'<div style="font-size:15.5px;font-weight:700;color:{S.INK};">'
                 f'2 · Upload it back</div>'
                 f'<div style="font-size:13.5px;color:{S.MUTED};margin-top:6px;line-height:1.5;">'
@@ -563,13 +563,15 @@ def page_report_clo(store):
 def _diverging_svg(clos, clo_att, target):
     W, rowh = 1120, 52
     Hgt = 34 + len(clos) * rowh
-    zero, scale = W * 0.52, 11.0
+    # The bar is capped short of the label column so a long negative bar cannot
+    # run back over the CLO name and its attainment figure.
+    zero, scale = W * 0.55, 11.0
     out = [f'<svg viewBox="0 0 {W} {Hgt}" style="width:100%;height:{Hgt}px;display:block;">']
     for i, clo in enumerate(clos):
         att = clo_att.get(clo, 0.0) * 100
         delta = att - target
         cy = 26 + i * rowh
-        w = min(abs(delta) * scale, zero - 340)
+        w = min(abs(delta) * scale, zero - 300)
         if delta >= 0:
             x, col, lx, anch = zero, S.BAND_COLOR["H"], zero + w + 12, "start"
         else:
@@ -578,9 +580,9 @@ def _diverging_svg(clos, clo_att, target):
                    S.BAND_COLOR["L"] if ratio < 60 else
                    S.BAND_COLOR["M"] if ratio < 90 else S.BAND_COLOR["H"])
             x, lx, anch = zero - w, zero - w - 12, "end"
-        out.append(f'<text x="{zero - 330}" y="{cy + 5:.0f}" font-size="15" font-weight="800" '
+        out.append(f'<text x="12" y="{cy + 5:.0f}" font-size="15" font-weight="800" '
                    f'fill="{S.INK}" font-family="Manrope,sans-serif">{clo}</text>')
-        out.append(f'<text x="{zero - 272}" y="{cy + 5:.0f}" font-size="14" fill="{S.MUTED}" '
+        out.append(f'<text x="72" y="{cy + 5:.0f}" font-size="14" fill="{S.MUTED}" '
                    f'font-family="Manrope,sans-serif">attainment {att / 100:.2f}</text>')
         out.append(f'<rect x="{x:.1f}" y="{cy - 13}" width="{w:.1f}" height="26" rx="4" '
                    f'fill="{col}"/>')

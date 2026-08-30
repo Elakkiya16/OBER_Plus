@@ -135,7 +135,7 @@ section[data-testid="stSidebar"] {{ display: none; }}
    styling to the widgets in that container — an HTML wrapper written with
    st.markdown does not contain the widgets that follow it. */
 div[data-testid="stLayoutWrapper"]:has(> div > div > div > div > div > div.nav-marker) {{
-    background: {NAVY}; margin: 0 -44px; padding: 0 44px 12px 44px;
+    background: {SKY}; margin: 0 -44px; padding: 2px 44px 0 44px;
     width: calc(100% + 88px) !important; max-width: none !important;
     flex: 0 0 auto !important;
 }}
@@ -147,16 +147,16 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker)
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button {{
     background: transparent !important; border: none !important; box-shadow: none !important;
-    color: #9DB0CE !important; font-size: 15px !important; font-weight: 600 !important;
-    padding: 10px 0 !important; min-height: 0 !important;
-    border-bottom: 3px solid transparent !important; border-radius: 0 !important;
+    color: #17457F !important; font-size: 16px !important; font-weight: 700 !important;
+    padding: 15px 0 13px 0 !important; min-height: 0 !important; letter-spacing: 0.005em;
+    border-bottom: 4px solid transparent !important; border-radius: 0 !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button:hover {{
-    color: #FFFFFF !important;
+    color: {NAVY} !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.nav-marker) .stButton > button[kind="primary"] {{
-    color: #FFFFFF !important; font-weight: 800 !important;
-    border-bottom-color: {GOLD} !important;
+    color: {NAVY} !important; font-weight: 800 !important;
+    border-bottom-color: {RED_T} !important;
 }}
 
 div[data-testid="stLayoutWrapper"]:has(> div > div > div > div > div > div.sub-marker) {{
@@ -171,8 +171,8 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker)
     margin: 0 !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button {{
-    background: #EAF4FB !important; border: none !important; color: {SOFT} !important;
-    font-size: 14px !important; font-weight: 600 !important; border-radius: 999px !important;
+    background: #EAF4FB !important; border: none !important; color: {NAVY2} !important;
+    font-size: 15px !important; font-weight: 700 !important; border-radius: 999px !important;
     padding: 10px 16px !important; min-height: 0 !important; box-shadow: none !important;
 }}
 div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker) .stButton > button:hover {{
@@ -376,7 +376,7 @@ div[data-testid="stNumberInput"] button {{ display: none; }}
 # Chrome
 # ---------------------------------------------------------------------------
 
-def masthead_html(user: str, semester: str) -> str:
+def masthead_html(user: str) -> str:
     b64 = _logo_b64()
     logo = (f'<img class="mast-logo" src="data:image/png;base64,{b64}" alt="BITS Pilani Dubai">'
             f'<div class="mast-rule"></div>') if b64 else ""
@@ -385,8 +385,7 @@ def masthead_html(user: str, semester: str) -> str:
     return (f'<div class="mast">{rule}<div class="mast-top"><div class="mast-brand">{logo}'
             f'<div><div class="mast-name">OBER<span class="plus">+</span></div>'
             f'<div class="mast-sub">OUTCOME-BASED EDUCATION &amp; REPORTING</div></div></div>'
-            f'<div class="mast-right"><span class="mast-sem">{semester}</span>'
-            f'<span class="mast-user">{user}</span>'
+            f'<div class="mast-right"><span class="mast-user">{user}</span>'
             f'<span class="mast-logout">Logout</span></div></div></div>')
 
 

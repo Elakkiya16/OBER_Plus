@@ -11,7 +11,7 @@ import streamlit as st
 import style as S
 import pages_ober as P
 import pages_plus as PP
-from store import init_store
+from store import OFFERING_ORDER, init_store
 
 st.set_page_config(page_title="BPDC OBER+", page_icon="🎓", layout="wide",
                    initial_sidebar_state="collapsed")
@@ -38,7 +38,7 @@ st.session_state.setdefault("section", "CO / PO Mapping")
 st.session_state.setdefault("screen", "CLO Entry")
 
 # --- masthead ---------------------------------------------------------------
-st.markdown(S.masthead_html(store["user"], store["active_semester"]), unsafe_allow_html=True)
+st.markdown(S.masthead_html(store["user"]), unsafe_allow_html=True)
 
 # --- primary nav, drawn over the masthead's navy band ----------------------
 with st.container():
@@ -59,8 +59,13 @@ is_5r = section == "OBER+ 5R Loop"
 
 with st.container():
     st.markdown('<div class="sub-marker"></div>', unsafe_allow_html=True)
-    widths = [1.1] * len(screens) + [max(0.1, 8 - 1.1 * len(screens))]
-    sub = st.columns(widths)
+    # Screen pills on the left, the semester picker on the right. The semester
+    # is a choice, not a fixed line in the masthead: picking one repoints every
+    # course at that offering's marks, so the OBER screens and reports read the
+    # semester you are actually looking at.
+    n = len(screens)
+    widths = [1.55] * n + [max(0.4, 9.0 - 1.55 * n), 2.0]
+    sub = st.columns(widths, vertical_alignment="center")
     for i, (name, _fn) in enumerate(screens):
         with sub[i]:
             label = f"{i + 1} · {name}" if is_5r else name
@@ -68,6 +73,18 @@ with st.container():
                          type="primary" if st.session_state.screen == name else "secondary"):
                 st.session_state.screen = name
                 st.rerun()
+
+    sems = [s["name"] for s in store["semesters"]]
+    current = store["active_semester"]
+    with sub[-1]:
+        picked = st.selectbox("Semester", sems, index=sems.index(current),
+                              key="sem_pick", label_visibility="collapsed")
+    if picked != current:
+        store["active_semester"] = picked
+        idx = OFFERING_ORDER.index(picked)
+        for c in store["courses"].values():
+            c["marks"] = c["marks_by_offering"][idx]
+        st.rerun()
 
 # --- page -------------------------------------------------------------------
 current = st.session_state.screen
