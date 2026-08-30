@@ -42,10 +42,6 @@ OFFERING_ORDER = ["First Semester 2024-25", "Second Semester 2024-25", "First Se
 # 2024-25). That sheet's own note — "Target Grades can be fixed based on subject
 # difficulty" — is why this is a per-course default here rather than a constant.
 DEFAULT_TARGET = 60.0
-TARGET_SOURCE = ('Default 60% from "III. Target Setting" in your CS F531 ToC_CAA.xlsx '
-                 'Target Sheet, which sets Target Level % = 60 for every component. '
-                 'That sheet notes targets can be fixed by subject difficulty, so it is '
-                 'editable per course here.')
 TARGET_ATTAINMENT = DEFAULT_TARGET  # kept for callers that want the default
 
 

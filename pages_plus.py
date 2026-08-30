@@ -8,16 +8,15 @@ Chart forms follow the reader's question, not habit:
   R5  dumbbell         — the form for before → after per item, across every
                          logged redesign on one axis
 
-Method notes live behind a "How this works" expander so a screen shows results,
-not a lecture. Nothing here re-derives attainment: every number is OBER's own
-computation for that specific offering.
+Nothing here re-derives attainment: every number is OBER's own computation for
+that specific offering.
 """
 import streamlit as st
 
 import compute as cp
 import style as S
 from engine import r2_reflect_series, r5_reassess, classify_rbt
-from store import (OFFERING_ORDER, PLO_IDS, TARGET_SOURCE, R3_STANDARD_MENU,
+from store import (OFFERING_ORDER, PLO_IDS, R3_STANDARD_MENU,
                    R3_INNOVATIVE_MENU, clo_description_history, next_id)
 from pages_ober import course_picker, head
 
@@ -66,8 +65,6 @@ def target_control(course, key):
     v = c[0].number_input("Attainment target (%)", min_value=0, max_value=100, step=5,
                           value=int(target_of(course)), key=key)
     course["target"] = float(v)
-    c[1].markdown(f'<div style="padding-top:34px;font-size:13.5px;color:{S.MUTED};'
-                  f'line-height:1.5;">{TARGET_SOURCE}</div>', unsafe_allow_html=True)
     return float(v)
 
 
@@ -133,20 +130,9 @@ def page_r1(store):
         ]), unsafe_allow_html=True)
 
     with S.card("CLO attainment by offering",
-                right="three discrete measurements per CLO — grouped, not joined"):
+                right="target 60%"):
         st.markdown(S.legend(list(zip(SHORT, S.SEQ))), unsafe_allow_html=True)
         st.markdown(_grouped_columns(clo_s, t), unsafe_allow_html=True)
-        with st.expander("How this works"):
-            st.write(
-                "The computation is OBER's existing per-offering chain, unchanged. What R1 adds "
-                "is that results accumulate across offerings, and that the window is gated on "
-                "**offering count** rather than calendar time — so a course taught twice a year "
-                "reaches a readable trend in about 18 months instead of three years. Neither "
-                "ABET Criterion 4 nor NBA Criterion 8 specifies a data-sufficiency threshold, so "
-                "this gate is OBER+'s own.\n\n"
-                "Offerings are discrete sittings, not a continuous series, so they are grouped "
-                "columns rather than a line; the shading runs light → dark with time."
-            )
 
     with S.card("The record"):
         headers = ["CLO", "Description"] + SHORT
@@ -189,14 +175,8 @@ def page_r2(store):
             S.stat("Offerings", "3<span class='faint'>/3</span>", "gate cleared"),
         ]), unsafe_allow_html=True)
 
-    with S.card("How a band is assigned", right="CAA OBEF v11.5 · KPI 2.1 cutoffs"):
+    with S.card("Attainment bands"):
         st.markdown(S.band_scale(t), unsafe_allow_html=True)
-        st.markdown(
-            f'<div style="font-size:14px;color:{S.SOFT};margin-top:14px;line-height:1.6;">'
-            f'Each flagged item is scored on <b style="color:{S.INK};">(attainment ÷ target) × '
-            f'100</b>, averaged over only the offerings that missed. An item that never fell '
-            f'below {t:.0f}% has no shortfall to band and reads <b style="color:{S.INK};">On '
-            f'target</b>.</div>', unsafe_allow_html=True)
 
     with S.card("Course learning outcomes"):
         desc = {c["name"]: c["description"] for c in course["clos"]}
@@ -243,15 +223,6 @@ def page_r2(store):
                 "Edited between offerings with no recommendation behind it.",
                 before=n["from_text"], after=n["to_text"], accent=S.BAND_COLOR["L"]),
                 unsafe_allow_html=True)
-        with st.expander("How this works"):
-            st.write(
-                "CLO Entry stores a free-text description and no RBT field, so wording can "
-                "change between offerings without anything recording it. This check reads the "
-                "stored description for each offering and classifies its leading action verb "
-                "against Bloom's revised taxonomy. It runs *alongside* the flag and never "
-                "suspends it — a drift note is evidence, not an excuse — and it feeds R4 as a "
-                "detected change."
-            )
 
 
 # ---------------------------------------------------------------------------
@@ -312,15 +283,6 @@ def page_r3(store):
                                 f"shortfall {r.avg_shortfall:.2f} pts; band {S.BAND_LABEL[r.band]}.",
                     "decided_on": "2026-08-29", "status": "Recorded"})
                 st.success(f"Recorded as {rid} — R4 can now log a redesign against it.")
-            with st.expander("How this works"):
-                st.write(
-                    "R3 does not pick a fix. It packages R2's evidence and hands a person a "
-                    "menu; whatever is selected becomes a recorded decision with an ID, so R4 "
-                    "can say *this redesign implements that recommendation* and R5 can say "
-                    "*here is what happened after*. What the menu contributes is not that a list "
-                    "exists, but that each action carries its own evidence base and is bound to "
-                    "a tracked outcome."
-                )
 
     recs = [r for r in store["recommendations"] if r["course"] == course["id"]]
     if recs:
@@ -365,16 +327,6 @@ def page_r4(store):
                         + (f' · implements {rec["recommendation_id"]}'
                            if rec["recommendation_id"] else ' · no linked recommendation')),
                 accent=S.BAND_COLOR["H"] if f else S.BAND_COLOR["L"]), unsafe_allow_html=True)
-        with st.expander("How this works"):
-            st.write(
-                "A change is **formal** when it implements a recorded R3 recommendation, and "
-                "**detected** when R2's drift check found it with no recommendation behind it. "
-                "Both keep the full before/after content, the offering boundary, and who made "
-                "the change. Detected changes are expected to be common at first, because CLO "
-                "revision has never been a tracked step. OBER itself keeps no edit history "
-                "today, so capturing attribution at the point of edit is a prerequisite this "
-                "stage depends on."
-            )
 
     with S.card("Log a change"):
         a = st.columns(2)
@@ -477,7 +429,7 @@ def page_r5(store):
                      res.verdict.split(" —")[0]))
 
     with S.card("Every logged redesign, before → after",
-                right="one row per redesign · the dot pair is the same CLO, two offerings"):
+                right="before → after"):
         st.markdown(S.legend([("Offering before the redesign", S.SEQ[0]),
                               ("Offering after", S.NAVY)]), unsafe_allow_html=True)
         st.markdown(_dumbbell(rows, t), unsafe_allow_html=True)
@@ -510,16 +462,3 @@ def page_r5(store):
                 ["Linked recommendation", rec["recommendation_id"] or "none — detected change"],
                 ["Logged by", f'{rec["changed_by"]} · {rec["changed_at"]}'],
             ], cell_classes=[["", "kv"]] * 5), unsafe_allow_html=True)
-
-    with S.card():
-        with st.expander("How this works"):
-            st.write(
-                f"**Gap closure = (shortfall before − shortfall after) ÷ shortfall before** — "
-                f"here ({res.shortfall_before:.2f} − {res.shortfall_after:.2f}) ÷ "
-                f"{res.shortfall_before:.2f}. Validation is immediate: the offering right after "
-                f"the redesign against the one right before it, not a fresh three-offering wait. "
-                f"It is banded on the same CAA cutoffs as R2.\n\n"
-                f"A dumbbell is the form for before → after per item: the gap between the dots "
-                f"is the change, position against the target rule is what still remains, and "
-                f"every redesign is comparable on one axis."
-            )

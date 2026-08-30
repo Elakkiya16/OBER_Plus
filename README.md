@@ -32,8 +32,6 @@ that component's CLOs, fill it in, upload it back. A blank cell is read as
 ABSENT. Uploaded marks are listed with per-student component totals.
 
 ### Report
-- **Overview** — the report catalogue: what can be generated, who reads it,
-  which visualisation it carries and what it downloads as.
 - **Marks Report** — every student's marks by component and CLO, exportable.
   Table only; raw per-student records are not chart material.
 - **CLO Report** — a diverging bar of each CLO's distance from target (the
@@ -65,6 +63,15 @@ ABSENT. Uploaded marks are listed with per-student component totals.
   shortfall before, banded on the same cutoffs as R2. Every logged redesign is
   drawn as one dumbbell row — the standard before→after form — so all
   interventions are comparable on a single axis against the target rule.
+
+## Interface
+
+The campus identity carries through: the gold / cyan / red rule across the top
+of the masthead is the innovate-achieve-lead device, each section's page title
+takes one of those colours so you can tell where you are before reading the
+heading, and every KPI tile takes the next colour in turn. Navy is the
+structure everything sits on. Band colours are separate and reserved — they
+mean severity, never decoration.
 
 ## How attainment is computed
 

@@ -84,19 +84,24 @@ section[data-testid="stSidebar"] {{ display: none; }}
 /* Content is inset 44px; the chrome bleeds back out with negative margins. */
 .block-container {{ padding: 0 44px 4rem 44px !important; max-width: 100% !important; }}
 
-/* ======================= Masthead ======================= */
+/* ======================= Masthead =======================
+   The tri-colour rule is the campus device from the innovate/achieve/lead
+   banner: gold, cyan and red across the top, navy carrying everything under
+   it. All masthead type is white. */
 .mast {{ background: {NAVY}; padding: 0 44px; margin: 0 -44px; }}
-.mast-logo {{ height: 56px; width: auto; display: block; }}
-.mast-top {{ height: 92px; display: flex; align-items: center; justify-content: space-between; }}
-.mast-brand {{ display: flex; align-items: center; gap: 18px; }}
-.mast-rule {{ width: 1px; height: 44px; background: rgba(255,255,255,0.18); }}
-.mast-name {{ font-family: 'Sora', system-ui, sans-serif; font-size: 22px; font-weight: 800;
+.brandrule {{ display: flex; height: 6px; margin: 0 -44px; }}
+.brandrule i {{ flex: 1; }}
+.mast-logo {{ height: 74px; width: auto; display: block; }}
+.mast-top {{ height: 112px; display: flex; align-items: center; justify-content: space-between; }}
+.mast-brand {{ display: flex; align-items: center; gap: 20px; }}
+.mast-rule {{ width: 1px; height: 50px; background: rgba(255,255,255,0.22); }}
+.mast-name {{ font-family: 'Sora', system-ui, sans-serif; font-size: 23px; font-weight: 800;
               color: #FFFFFF; letter-spacing: -0.02em; line-height: 1.1; }}
 .mast-name .plus {{ color: {GOLD}; }}
-.mast-sub {{ font-size: 11.5px; font-weight: 600; color: #7E93B8; margin-top: 4px;
-             letter-spacing: 0.05em; }}
+.mast-sub {{ font-size: 11.5px; font-weight: 700; color: #FFFFFF; margin-top: 5px;
+             letter-spacing: 0.09em; }}
 .mast-right {{ display: flex; align-items: center; gap: 22px; }}
-.mast-sem {{ font-size: 14px; font-weight: 500; color: #7E93B8; }}
+.mast-sem {{ font-size: 14px; font-weight: 500; color: #FFFFFF; }}
 .mast-user {{ font-size: 14.5px; font-weight: 700; color: #FFFFFF; }}
 .mast-logout {{ border: 1.5px solid rgba(255,255,255,0.28); color: #FFFFFF; font-size: 13px;
                 font-weight: 700; padding: 8px 18px; border-radius: 999px; }}
@@ -159,6 +164,8 @@ div[data-testid="stVerticalBlock"]:has(> div > div > div > div > div.sub-marker)
 .nav-marker, .sub-marker {{ display: none; }}
 
 /* ======================= Body ======================= */
+.page-head {{ display: flex; align-items: center; gap: 16px; }}
+.page-head .tick {{ width: 7px; height: 38px; border-radius: 4px; flex: none; }}
 .page-title {{ font-family: 'Sora', system-ui, sans-serif; font-size: 36px; font-weight: 800;
                letter-spacing: -0.035em; color: {NAVY}; line-height: 1.1; }}
 .page-sub {{ font-size: 16px; color: {SOFT}; margin: 9px 0 22px 0; }}
@@ -337,7 +344,9 @@ def masthead_html(user: str, semester: str) -> str:
     b64 = _logo_b64()
     logo = (f'<img class="mast-logo" src="data:image/png;base64,{b64}" alt="BITS Pilani Dubai">'
             f'<div class="mast-rule"></div>') if b64 else ""
-    return (f'<div class="mast"><div class="mast-top"><div class="mast-brand">{logo}'
+    rule = (f'<div class="brandrule"><i style="background:{GOLD};"></i>'
+            f'<i style="background:{CYAN};"></i><i style="background:{BRAND_RED};"></i></div>')
+    return (f'<div class="mast">{rule}<div class="mast-top"><div class="mast-brand">{logo}'
             f'<div><div class="mast-name">OBER<span class="plus">+</span></div>'
             f'<div class="mast-sub">BITS PILANI · DUBAI CAMPUS</div></div></div>'
             f'<div class="mast-right"><span class="mast-sem">{semester}</span>'
@@ -345,9 +354,17 @@ def masthead_html(user: str, semester: str) -> str:
             f'<span class="mast-logout">Logout</span></div></div></div>')
 
 
+SECTION_COLOR = {"CO / PO Mapping": GOLD, "Assessment": CYAN,
+                 "Report": BRAND_RED, "OBER+ 5R Loop": NAVY2}
+
+
 def page_head(title: str, sub: str = "") -> str:
+    """The rule beside the title carries the section's campus colour, so each
+    part of the tool is recognisable before you read the heading."""
+    col = SECTION_COLOR.get(st.session_state.get("section", ""), NAVY2)
     s = f'<div class="page-sub">{sub}</div>' if sub else ""
-    return f'<div class="page-title">{title}</div>{s}'
+    return (f'<div class="page-head"><span class="tick" style="background:{col};"></span>'
+            f'<div class="page-title">{title}</div></div>{s}')
 
 
 @contextmanager
@@ -408,8 +425,19 @@ def stat(k: str, v: str, s: str = "", small: bool = False, accent: str = "") -> 
     return f'<div class="{cls}"{style}><div class="k">{k}</div><div class="{vc}">{v}</div>{sub}</div>'
 
 
+BRAND_CYCLE = [GOLD, CYAN, BRAND_RED, NAVY2]
+
+
 def stats_row(items) -> str:
-    return f'<div class="stats">{"".join(items)}</div>'
+    """Each tile takes the next campus colour, so a KPI row carries the identity
+    instead of four navy boxes. A tile that already has a band accent keeps it —
+    meaning always outranks decoration."""
+    out = []
+    for i, it in enumerate(items):
+        out.append(it.replace('<div class="stat">',
+                              f'<div class="stat accent" style="--a:{BRAND_CYCLE[i % 4]};">', 1)
+                   if '<div class="stat">' in it else it)
+    return f'<div class="stats">{"".join(out)}</div>'
 
 
 def legend(items) -> str:

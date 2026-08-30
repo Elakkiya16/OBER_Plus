@@ -1,8 +1,7 @@
 """
 OBER's own screens: Handout Upload, CLO Entry, Evaluation Components (with the
-Weightage and Mark Distribution matrices), CLO-PLO Mapping, Marks Entry, a
-Reports overview, and the three reports. Same flow, controls and validation
-rules as the deployed tool.
+Weightage and Mark Distribution matrices), CLO-PLO Mapping, Marks Entry and the
+three reports. Same flow, controls and validation rules as the deployed tool.
 """
 import streamlit as st
 
@@ -116,8 +115,7 @@ def page_clo_entry(store):
                             course[m].pop(name, None)
                         st.rerun()
 
-    with S.card("Add new CLO",
-                note="The leading verb sets the RBT level OBER+ tracks for wording drift in R2."):
+    with S.card("Add new CLO"):
         a = st.columns([1.4, 5.4, 1.4])
         n = a[0].text_input("CLO name", key="new_clo_name", placeholder="CLO5")
         d = a[1].text_input("Description", key="new_clo_desc",
@@ -437,72 +435,6 @@ def _ingest_marks(course, comp, upload, clos_in):
 
 
 # ---------------------------------------------------------------------------
-# Reports — overview
-# ---------------------------------------------------------------------------
-
-CATALOG = [
-    ("Marks Report", "Every student, by component and CLO.", "Instructor · moderation",
-     "Table only — raw marks; no chart earns its place", ["Excel", "CSV"], True),
-    ("CLO Report", "Per-CLO attainment across components, plus course attainment.",
-     "Instructor", "Diverging bar — distance from target per CLO", ["Excel", "PDF"], True),
-    ("PLO Report", "CLO attainment carried into each mapped programme outcome.",
-     "Programme · accreditation", "Bars against target, plus the CLO→PLO grid",
-     ["Excel", "PDF"], True),
-    ("Attainment Trend", "The same course across every offering on record.",
-     "Instructor · HoD", "Grouped columns per CLO; heatmap past ~6 CLOs",
-     ["Excel", "PDF"], False),
-    ("Continuous Improvement Report",
-     "The full 5R chain: flagged → recommended → redesigned → reassessed, with IDs and dates.",
-     "CAA · accreditation", "Evidence chain, not a chart — one row per flagged CLO",
-     ["PDF"], False),
-    ("Programme PLO Summary", "Every course feeding each PLO, one grid.",
-     "HoD · programme review", "Heatmap, course × PLO, sequential", ["Excel", "PDF"], False),
-]
-
-
-def page_reports_hub(store):
-    head("Reports", "What can be generated, for whom, and in what form.")
-    with S.card():
-        course_picker(store, "rh_course")
-
-    with S.card("Report catalogue", right="3 in OBER today · 3 proposed for OBER+"):
-        rows, cls = [], []
-        for name, what, who, viz, fmts, exists in CATALOG:
-            badge = (S.band_chip("OK", "") if False else
-                     f'<span class="chip" style="background:'
-                     f'{"#F2F4F7" if exists else "#FDF3E3"};color:'
-                     f'{S.MUTED if exists else "#8A5A12"};">'
-                     f'{"In OBER" if exists else "Proposed"}</span>')
-            tags = " ".join(f'<span class="chip" style="background:#EEF3FB;color:{S.NAVY};">{f}</span>'
-                            for f in fmts)
-            rows.append([f'<b>{name}</b> {badge}<br/>'
-                         f'<span style="font-size:13px;color:{S.MUTED};">{what}</span>',
-                         viz, who, tags])
-            cls.append(["", "", "", ""])
-        st.markdown(S.table(["Report", "Visualisation", "Audience", "Download"], rows,
-                            cell_classes=cls), unsafe_allow_html=True)
-
-    c = st.columns(2)
-    with c[0]:
-        with S.card("Why a chart, or not"):
-            st.markdown(
-                f'<div style="font-size:14.5px;color:{S.SOFT};line-height:1.7;">'
-                f'The reader\'s question picks the form. <b style="color:{S.INK};">Above or below '
-                f'target</b> → diverging bar. <b style="color:{S.INK};">Compare discrete '
-                f'sittings</b> → grouped columns. <b style="color:{S.INK};">Before → after</b> → '
-                f'dumbbell. <b style="color:{S.INK};">A grid of many CLOs or courses</b> → '
-                f'heatmap. Raw marks stay a table.</div>', unsafe_allow_html=True)
-    with c[1]:
-        with S.card("Formats"):
-            st.markdown(
-                f'<div style="font-size:14.5px;color:{S.SOFT};line-height:1.7;">'
-                f'<b style="color:{S.INK};">Excel</b> for anything someone will re-cut.<br/>'
-                f'<b style="color:{S.INK};">PDF</b> for anything submitted as-is, with charts '
-                f'rendered in.<br/><b style="color:{S.INK};">CSV</b> only where a system, not a '
-                f'person, is the reader.</div>', unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
 # Reports — Marks
 # ---------------------------------------------------------------------------
 
@@ -581,7 +513,7 @@ def page_report_clo(store):
     crs = cp.course_attainment(course)
 
     with S.card("Distance from target",
-                right="diverging — the question is above or below, and by how much"):
+                right=f"target {DEFAULT_TARGET:.0f}%"):
         st.markdown(_diverging_svg(clos, clo_att, t), unsafe_allow_html=True)
 
     with S.card():
@@ -705,7 +637,7 @@ def page_report_plo(store):
     bars = _plo_bars(plo_att, DEFAULT_TARGET)
     if bars:
         with S.card("Programme outcomes this course feeds",
-                    right="only the mapped PLOs — an unmapped one is not a zero"):
+                    right=f"target {DEFAULT_TARGET:.0f}%"):
             st.markdown(bars, unsafe_allow_html=True)
     with S.card():
         headers = ["CLO", "Attainment"] + PLO_IDS
