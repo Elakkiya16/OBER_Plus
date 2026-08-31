@@ -121,7 +121,7 @@ def page_r1(store):
         clo_s, _p, crs_s = _series(course)
         below = sum(1 for v in clo_s.values() if v[-1] < t)
         st.markdown(S.stats_row([
-            S.stat("Offerings on record", f"3<span class='faint'>/3</span>", "Trend gate cleared"),
+            S.stat("Offerings on record", f"3<span class='faint'>/3</span>", "3 offerings of history"),
             S.stat("Course attainment", f"{crs_s[-1]:.1f}%", f"target {t:.0f}%"),
             S.stat("CLOs below target", f"{below}<span class='faint'>/{len(clo_s)}</span>",
                    "latest offering"),
@@ -179,7 +179,7 @@ def page_r2(store):
             S.stat("Lowest performing", worst_clo, f"−{worst:.2f} pts · band {S.BAND_LABEL[wb]}",
                    accent=S.BAND_COLOR.get(wb, S.GOLD)),
             S.stat("Offerings", f"{n_off}<span class='faint'>/3</span>",
-                   "trend gate cleared" if gate_ok else "gate not yet cleared"),
+                   "3 offerings on record" if gate_ok else "under 3 offerings on record"),
         ]), unsafe_allow_html=True)
 
     with S.card("Attainment bands"):
@@ -225,7 +225,7 @@ def page_r2(store):
                             rows, cell_classes=cls), unsafe_allow_html=True)
 
     notes = _drift(store, course)
-    with S.card("CLO wording drift",
+    with S.card("CLO wording check",
                 right=f"{len(notes)} detected" if notes else "none detected"):
         if not notes:
             st.markdown(f'<div class="card-note">No CLO description changed across the '
@@ -340,7 +340,7 @@ def page_r4(store):
         st.markdown(S.stats_row([
             S.stat("Records", str(len(log)), "this course"),
             S.stat("Formal", str(formal), "linked to a recommendation"),
-            S.stat("Detected", str(len(log) - formal), "caught by the drift check"),
+            S.stat("Detected", str(len(log) - formal), "caught by the wording check"),
         ]), unsafe_allow_html=True)
 
     with S.card("Change log"):

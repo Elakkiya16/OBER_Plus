@@ -166,7 +166,7 @@ SEED_RECOMMENDATIONS = [
         "clo": "CLO4",
         "category": "Worked examples / reduce cognitive load",
         "citation": "Paas & van Merriënboer, Current Directions in Psychological Science, 2020",
-        "evidence": "Below target in 2 of 3 offerings; average shortfall 10.5 pts; band Medium.",
+        "evidence": "Below target in 2 of 3 offerings; average shortfall 11.5 pts; band Medium.",
         "decided_by": "Dr. A. Rao",
         "decided_on": "2026-06-11",
         "status": "Implemented",
@@ -208,7 +208,7 @@ SEED_CHANGE_LOG = [
         "recommendation_id": None,
         "offering_boundary": "Second Semester 2025-26 → First Semester 2026-27",
         "what_changed": "CLO3 description reworded during I/C handover (Dr. A. Rao → Dr. S. Menon). "
-                        "Not routed through a recommendation; caught by the CLO drift check.",
+                        "Not routed through a recommendation. Caught by the CLO wording check.",
         "before": "Apply context-free grammars and pushdown automata to language problems.",
         "after": "Design context-free grammars and pushdown automata.",
         "changed_by": "Dr. S. Menon",
