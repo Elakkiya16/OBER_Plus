@@ -63,26 +63,25 @@ CSF351_COMPONENTS = [
     ("Problem Solving", 10), ("Assignment", 10), ("Compre", 80),
 ]
 
-# Weightage Distribution (%) — each CLO row totals 100
-# Two rules hold at once: every CLO row totals exactly 100, and no component
-# column exceeds 100 — a component cannot carry more than its own whole weight
-# across the CLOs that use it. Compre touches every CLO, so its share per CLO
-# has to stay small enough for the column to close at 100.
+# Weightage Distribution (%) — each CLO row totals 100, no column exceeds 100.
+# Values read directly from the live OBER (ober.bits-dubai.ac.ae), course
+# 31314 CS F351, First Semester 2025-26, on 31.08.2026 — as are the mark
+# distribution and component totals below.
 CSF351_WEIGHTAGE = {
-    "CLO1": {"Quiz": 80, "Midsem": 10, "Compre": 10},
+    "CLO1": {"Quiz": 60, "Midsem": 20, "Compre": 20},
     "CLO2": {"Midsem": 80, "Compre": 20},
     "CLO3": {"Exit Quiz": 80, "Compre": 20},
-    "CLO4": {"Problem Solving": 70, "Compre": 30},
+    "CLO4": {"Problem Solving": 80, "Compre": 20},
     "CLO5": {"Assignment": 80, "Compre": 20},
 }
 
 # Mark Distribution — each component column totals that component's total marks
 CSF351_MARKDIST = {
-    "CLO1": {"Quiz": 30, "Midsem": 12, "Compre": 6},
-    "CLO2": {"Midsem": 48, "Compre": 4},
-    "CLO3": {"Exit Quiz": 10, "Compre": 28},
-    "CLO4": {"Problem Solving": 10, "Compre": 26},
-    "CLO5": {"Assignment": 10, "Compre": 16},
+    "CLO1": {"Quiz": 30, "Midsem": 6, "Compre": 7},
+    "CLO2": {"Midsem": 54, "Compre": 21},
+    "CLO3": {"Exit Quiz": 10, "Compre": 14},
+    "CLO4": {"Problem Solving": 10, "Compre": 11},
+    "CLO5": {"Assignment": 10, "Compre": 27},
 }
 
 CSF351_MAPPING = {
@@ -194,10 +193,10 @@ SEED_CHANGE_LOG = [
         "recommendation_id": "R3-2025-006",
         "offering_boundary": "Second Semester 2024-25 → First Semester 2025-26",
         "what_changed": "Added 2 worked-example problem sets on Turing Machine construction; "
-                        "raised Problem Solving weightage for CLO4 from 20% to 30% and its "
-                        "mark allocation from 6 to 10.",
-        "before": "Problem Solving: CLO4 = 6 marks; weightage 20%",
-        "after": "Problem Solving: CLO4 = 10 marks; weightage 30%",
+                        "raised Problem Solving weightage for CLO4 from 70% to 80% "
+                        "(Compre share 30% to 20%).",
+        "before": "CLO4 weightage row: Problem Solving 70%, Compre 30%",
+        "after": "CLO4 weightage row: Problem Solving 80%, Compre 20%",
         "changed_by": "Dr. A. Rao",
         "changed_at": "2025-06-18",
     },
