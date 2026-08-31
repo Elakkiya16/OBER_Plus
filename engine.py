@@ -1,9 +1,15 @@
 """
 OBER+ 5R helpers — pure functions, no data coupling.
 
-  R2  persistence flag + average shortfall, banded H/M/L/VL using CAA's own
-      OBEF University Guidebook v11.5 cutoff spacing (90/60/30/0, Appendix A /
-      KPI 2.1) — reused, not invented
+  R2  two tiers:
+        alert  — the item is below target in the CURRENT offering; raised at
+                 once, so R3 can record a decision in the very next offering
+        flag   — persistence: below target in >=2 of the last 3 offerings,
+                 with average shortfall banded H/M/L/VL using CAA's own OBEF
+                 University Guidebook v11.5 cutoff spacing (90/60/30/0,
+                 Appendix A / KPI 2.1) — reused, not invented. The
+                 three-offering gate governs this trend judgement only,
+                 never whether action may be taken.
       + RBT/Bloom's-verb classification for the CLO wording drift check
   R5  immediate before/after gap-closure metric, same H/M/L/VL bands
 
@@ -42,19 +48,36 @@ class ReflectResult:
     label: str
     attainments: list
     target: float
-    flagged: bool
+    flagged: bool            # persistence: below target in >=2 of last 3 (gate cleared)
     miss_count: int
     avg_shortfall: float | None
     avg_ratio: float | None
     band: str
+    alert: bool = False      # below target in the current (latest) offering
+    latest_shortfall: float | None = None
+    offerings: int = 0       # offerings on record for this item
+    gate: bool = False       # trend judgement allowed (offerings >= 3)
+
+    @property
+    def needs_attention(self) -> bool:
+        """Anything R3 may act on: an alert this offering or a persistent flag."""
+        return self.alert or self.flagged
 
 
 def r2_reflect_series(item_id: str, label: str, attainments: list, target: float = TARGET_ATTAINMENT) -> ReflectResult:
     """attainments: list of 3 numbers (%), oldest first, for this CLO/PLO/course
     across its last 3 offerings — each already OBER's own computed number for
     that specific offering."""
-    misses = [a for a in attainments if a is not None and a < target]
-    flagged = len(misses) >= 2
+    known = [a for a in attainments if a is not None]
+    offerings = len(known)
+    gate = offerings >= 3
+    window = known[-3:]
+    misses = [a for a in window if a < target]
+    # persistence needs the gate; the alert never waits for it
+    flagged = gate and len(misses) >= 2
+    latest = known[-1] if known else None
+    alert = latest is not None and latest < target
+    latest_shortfall = round(target - latest, 2) if alert else None
     if misses:
         avg_shortfall = round(sum(target - m for m in misses) / len(misses), 2)
         avg_ratio = round(sum((m / target) * 100 for m in misses) / len(misses), 1)
@@ -65,6 +88,8 @@ def r2_reflect_series(item_id: str, label: str, attainments: list, target: float
         item_id=item_id, label=label, attainments=attainments, target=target,
         flagged=flagged, miss_count=len(misses),
         avg_shortfall=avg_shortfall, avg_ratio=avg_ratio,
+        alert=alert, latest_shortfall=latest_shortfall,
+        offerings=offerings, gate=gate,
         # An item that never fell below target has no shortfall to band — it is
         # "On target", NOT band High. Handing it "H" made every healthy row look
         # like a graded result and hid the real spread across H/M/L/VL.

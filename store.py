@@ -177,7 +177,7 @@ SEED_RECOMMENDATIONS = [
         "course": "31316",
         "clo": "CLO4",
         "category": "Industry-sourced problems as project/assessment content",
-        "citation": "Naseer et al., Nature Scientific Reports, 2025",
+        "citation": "Villarroel et al., Assessment & Evaluation in Higher Education, 2018",
         "evidence": "Below target in 3 of 3 offerings; average shortfall 41.4 pts; band Low.",
         "decided_by": "Dr. E. Rajasekar",
         "decided_on": "2025-06-20",
@@ -246,11 +246,11 @@ R3_STANDARD_MENU = [
 
 R3_INNOVATIVE_MENU = [
     ("Industry-sourced problems as project/assessment content",
-     "Naseer et al., Nature Scientific Reports, 2025"),
+     "Villarroel et al., Assessment & Evaluation in Higher Education, 2018 — authentic assessment blueprint; attainment effect to be established"),
     ("Industry co-teach + CLO revision",
-     "Naseer et al., 2025; gap vs. Dawson et al., Education Sciences, 2026"),
+     "Villarroel et al., 2018; course-screening gap noted by Joseph et al., Education Sciences, 2026"),
     ("AI-targeted remediation at the flagged CLO (instructor-reviewed)",
-     "Al Foori & Oyelere, Frontiers in Computer Science, 2026 — hypothesis, not proven practice"),
+     "Al Foori & Oyelere, Frontiers in Computer Science, 2026 — feasibility evidence only; hypothesis, not proven practice"),
 ]
 
 

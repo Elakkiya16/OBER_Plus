@@ -153,7 +153,7 @@ def page_r1(store):
 # ---------------------------------------------------------------------------
 
 def page_r2(store):
-    head("Reflect", "What is persistently below target, and by how much.")
+    head("Reflect", "What is below target this offering, what is persistently below target, and by how much.")
     with S.card():
         c = st.columns([3, 2])
         with c[0]:
@@ -161,18 +161,25 @@ def page_r2(store):
         t = target_control(course, "r2_target")
         rc, rp, rcr, _c, _s = _reflect(course)
         flagged = [k for k, r in rc.items() if r.flagged]
+        alerts = [k for k, r in rc.items() if r.alert and not r.flagged]
+        n_off = max([r.offerings for r in rc.values()] or [0])
+        gate_ok = any(r.gate for r in rc.values())
         worst = max([r.avg_shortfall for r in rc.values() if r.avg_shortfall] or [0])
         worst_clo = next((k for k, r in rc.items()
                           if r.avg_shortfall and abs(r.avg_shortfall - worst) < 1e-9), "—")
         wb = rc[worst_clo].band if worst_clo in rc else "OK"
         st.markdown(S.stats_row([
+            S.stat("Alerts this offering",
+                   f"{len(alerts) + len([k for k in flagged if rc[k].alert])}"
+                   f"<span class='faint'>/{len(rc)}</span>",
+                   "below target in the latest offering"),
             S.stat("CLOs flagged", f"{len(flagged)}<span class='faint'>/{len(rc)}</span>",
-                   ", ".join(flagged) if flagged else "none below target twice"),
-            S.stat("Course level", S.BAND_LABEL[rcr.band],
-                   "flagged" if rcr.flagged else "not flagged", small=True),
+                   ", ".join(flagged) if flagged else
+                   ("none below target twice" if gate_ok else "trend judgement pending")),
             S.stat("Lowest performing", worst_clo, f"−{worst:.2f} pts · band {S.BAND_LABEL[wb]}",
                    accent=S.BAND_COLOR.get(wb, S.GOLD)),
-            S.stat("Offerings", "3<span class='faint'>/3</span>", "gate cleared"),
+            S.stat("Offerings", f"{n_off}<span class='faint'>/3</span>",
+                   "trend gate cleared" if gate_ok else "gate not yet cleared"),
         ]), unsafe_allow_html=True)
 
     with S.card("Attainment bands"):
@@ -191,8 +198,15 @@ def page_r2(store):
                   f'background:{S.BAND_COLOR[r.band]};"></div></div>'
                   if r.avg_shortfall is not None else
                   f'<div style="font-size:14.5px;color:{S.MUTED};">No shortfall</div>')
-            chip = (S.band_chip(r.band, f" · {r.avg_ratio:.0f}%")
-                    if r.avg_ratio is not None else S.band_chip("OK"))
+            if r.flagged:
+                chip = S.band_chip(r.band, f" · {r.avg_ratio:.0f}% · flagged")
+            elif r.alert:
+                chip = ('<span class="chip" style="background:#FDF3E3;color:#8A5A12;">'
+                        f'Alert · −{r.latest_shortfall:.1f} pts this offering</span>')
+            elif r.avg_ratio is not None:
+                chip = S.band_chip(r.band, f" · {r.avg_ratio:.0f}%")
+            else:
+                chip = S.band_chip("OK")
             st.markdown(S.clo_card(k, short, list(zip(r.attainments, SHORT)), t, sf, chip,
                                    alert=(r.band in ("L", "VL"))), unsafe_allow_html=True)
 
@@ -236,20 +250,33 @@ def page_r3(store):
         with c[0]:
             course = course_picker(store, "r3_course")
         rc, _rp, _rcr, _c, _s = _reflect(course)
-        flagged = [k for k, r in rc.items() if r.flagged]
+        flagged = [k for k, r in rc.items() if r.needs_attention]
         if not flagged:
-            st.markdown('<div class="card-note">No flagged CLOs for this course — nothing to '
-                        'recommend against.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-note">No CLO is below target this offering and none '
+                        'is flagged — nothing to recommend against.</div>',
+                        unsafe_allow_html=True)
         else:
+            labels = {k: f"{k} · {'flagged' if rc[k].flagged else 'alert'}" for k in flagged}
             with c[1]:
-                target_clo = st.selectbox("Flagged CLO", flagged, key="r3_clo")
+                pick_lbl = st.selectbox("CLO needing attention", list(labels.values()),
+                                        key="r3_clo")
+            target_clo = next(k for k, v in labels.items() if v == pick_lbl)
             r = rc[target_clo]
-            st.markdown(S.stats_row([
-                S.stat("Missed", f"{r.miss_count} of 3", "offerings below target"),
-                S.stat("Avg shortfall", f"−{r.avg_shortfall:.2f}", "points"),
-                S.stat("Band", S.BAND_LABEL[r.band], f"{r.avg_ratio:.0f}% of target", small=True,
-                       accent=S.BAND_COLOR[r.band]),
-            ]), unsafe_allow_html=True)
+            if r.flagged:
+                st.markdown(S.stats_row([
+                    S.stat("Missed", f"{r.miss_count} of 3", "offerings below target"),
+                    S.stat("Avg shortfall", f"−{r.avg_shortfall:.2f}", "points"),
+                    S.stat("Band", S.BAND_LABEL[r.band], f"{r.avg_ratio:.0f}% of target",
+                           small=True, accent=S.BAND_COLOR[r.band]),
+                ]), unsafe_allow_html=True)
+            else:
+                st.markdown(S.stats_row([
+                    S.stat("Status", "Alert", "below target this offering", small=True,
+                           accent=S.GOLD),
+                    S.stat("Shortfall", f"−{r.latest_shortfall:.2f}", "points, latest offering"),
+                    S.stat("Trend", f"{r.offerings} of 3",
+                           "offerings on record; persistence judged at 3", small=True),
+                ]), unsafe_allow_html=True)
             desc = next(c["description"] for c in course["clos"] if c["name"] == target_clo)
             st.markdown(f'<div style="font-size:14.5px;color:{S.SOFT};margin-top:16px;">'
                         f'<b style="color:{S.INK};">{target_clo}</b> — {desc}</div>',
@@ -279,8 +306,12 @@ def page_r3(store):
                 store["recommendations"].append({
                     "id": rid, "course": course["id"], "clo": target_clo,
                     "category": free.strip() or pick, "citation": cite, "decided_by": who,
-                    "evidence": f"Below target in {r.miss_count} of 3 offerings; average "
-                                f"shortfall {r.avg_shortfall:.2f} pts; band {S.BAND_LABEL[r.band]}.",
+                    "evidence": (f"Below target in {r.miss_count} of 3 offerings; average "
+                                 f"shortfall {r.avg_shortfall:.2f} pts; band {S.BAND_LABEL[r.band]}."
+                                 if r.flagged else
+                                 f"Alert: below target in the latest offering by "
+                                 f"{r.latest_shortfall:.2f} pts; {r.offerings} of 3 offerings "
+                                 f"on record, persistence not yet judged."),
                     "decided_on": "2026-08-29", "status": "Recorded"})
                 st.success(f"Recorded as {rid} — R4 can now log a redesign against it.")
 
