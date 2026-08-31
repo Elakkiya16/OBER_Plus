@@ -28,13 +28,13 @@ import random
 PLO_IDS = [f"PLO{i}" for i in range(1, 9)]
 
 SEMESTERS = [
-    {"id": 2, "name": "First Semester 2025-26", "active": True},
-    {"id": 1, "name": "Second Semester 2024-25", "active": False},
-    {"id": 0, "name": "First Semester 2024-25", "active": False},
+    {"id": 2, "name": "First Semester 2026-27", "active": True},
+    {"id": 1, "name": "Second Semester 2025-26", "active": False},
+    {"id": 0, "name": "First Semester 2025-26", "active": False},
 ]
 
 # Offering order, oldest first — the R1 longitudinal window.
-OFFERING_ORDER = ["First Semester 2024-25", "Second Semester 2024-25", "First Semester 2025-26"]
+OFFERING_ORDER = ["First Semester 2025-26", "Second Semester 2025-26", "First Semester 2026-27"]
 
 # Default attainment target. OBER (Marksheet_CAA_Final_Demo.xlsx) stores no
 # target; its marksheet reports a headcount of students scoring >= 60% beside
@@ -161,75 +161,75 @@ OFFERING_PERFORMANCE = {
 
 SEED_RECOMMENDATIONS = [
     {
-        "id": "R3-2025-006",
+        "id": "R3-2026-006",
         "course": "31314",
         "clo": "CLO4",
         "category": "Worked examples / reduce cognitive load",
         "citation": "Paas & van Merriënboer, Current Directions in Psychological Science, 2020",
         "evidence": "Below target in 2 of 3 offerings; average shortfall 10.5 pts; band Medium.",
         "decided_by": "Dr. A. Rao",
-        "decided_on": "2025-06-11",
+        "decided_on": "2026-06-11",
         "status": "Implemented",
     },
     {
-        "id": "R3-2025-011",
+        "id": "R3-2026-011",
         "course": "31316",
         "clo": "CLO4",
         "category": "Industry-sourced problems as project/assessment content",
         "citation": "Villarroel et al., Assessment & Evaluation in Higher Education, 2018",
         "evidence": "Below target in 3 of 3 offerings; average shortfall 41.4 pts; band Low.",
         "decided_by": "Dr. E. Rajasekar",
-        "decided_on": "2025-06-20",
+        "decided_on": "2026-06-20",
         "status": "Implemented",
     },
 ]
 
 SEED_CHANGE_LOG = [
     {
-        "id": "REC-2025-014",
+        "id": "REC-2026-014",
         "course": "31314",
         "clo": "CLO4",
         "path": "formal",
-        "recommendation_id": "R3-2025-006",
-        "offering_boundary": "Second Semester 2024-25 → First Semester 2025-26",
+        "recommendation_id": "R3-2026-006",
+        "offering_boundary": "Second Semester 2025-26 → First Semester 2026-27",
         "what_changed": "Added 2 worked-example problem sets on Turing Machine construction; "
                         "raised Problem Solving weightage for CLO4 from 70% to 80% "
                         "(Compre share 30% to 20%).",
         "before": "CLO4 weightage row: Problem Solving 70%, Compre 30%",
         "after": "CLO4 weightage row: Problem Solving 80%, Compre 20%",
         "changed_by": "Dr. A. Rao",
-        "changed_at": "2025-06-18",
+        "changed_at": "2026-06-18",
     },
     {
-        "id": "REC-2025-015",
+        "id": "REC-2026-015",
         "course": "31314",
         "clo": "CLO3",
         "path": "detected",
         "recommendation_id": None,
-        "offering_boundary": "Second Semester 2024-25 → First Semester 2025-26",
+        "offering_boundary": "Second Semester 2025-26 → First Semester 2026-27",
         "what_changed": "CLO3 description reworded during I/C handover (Dr. A. Rao → Dr. S. Menon). "
                         "Not routed through a recommendation; caught by the CLO drift check.",
         "before": "Apply context-free grammars and pushdown automata to language problems.",
         "after": "Design context-free grammars and pushdown automata.",
         "changed_by": "Dr. S. Menon",
-        "changed_at": "2025-07-02",
+        "changed_at": "2026-07-02",
     },
     {
         # The honest case: a recorded, well-grounded intervention that barely
         # moved the number. R5 has to be able to say so — a loop that only ever
         # reports success is not a loop.
-        "id": "REC-2025-021",
+        "id": "REC-2026-021",
         "course": "31316",
         "clo": "CLO4",
         "path": "formal",
-        "recommendation_id": "R3-2025-011",
-        "offering_boundary": "Second Semester 2024-25 → First Semester 2025-26",
+        "recommendation_id": "R3-2026-011",
+        "offering_boundary": "Second Semester 2025-26 → First Semester 2026-27",
         "what_changed": "Replaced the synthetic capstone dataset with an industry-supplied "
                         "defect-inspection set and re-scoped the project brief around it.",
         "before": "Project: synthetic benchmark dataset, fixed brief",
         "after": "Project: industry-supplied dataset, partner-reviewed brief",
         "changed_by": "Dr. E. Rajasekar",
-        "changed_at": "2025-07-10",
+        "changed_at": "2026-07-10",
     },
 ]
 
@@ -323,7 +323,7 @@ def _build_course(cid, code, title, clos, components, weightage, mark_dist, mapp
         "mark_dist": {k: dict(v) for k, v in mark_dist.items()},
         "mapping": {k: list(v) for k, v in mapping.items()},
         "roster": roster,
-        "handout": f"{cid}_handout_First_Semester_2025-26.pdf",
+        "handout": f"{cid}_handout_First_Semester_2026-27.pdf",
         "instructor_by_offering": instructor_by_offering,
         "target": DEFAULT_TARGET,
         "uploaded_components": [],
@@ -353,7 +353,7 @@ def init_store():
 
     store = {
         "semesters": [dict(s) for s in SEMESTERS],
-        "active_semester": "First Semester 2025-26",
+        "active_semester": "First Semester 2026-27",
         "courses": {c["id"]: c for c in (csf351, csf459)},
         "clo_history": {k: {kk: list(vv) for kk, vv in v.items()} for k, v in CLO_HISTORY.items()},
         "recommendations": [dict(r) for r in SEED_RECOMMENDATIONS],

@@ -20,7 +20,7 @@ from store import (OFFERING_ORDER, PLO_IDS, R3_STANDARD_MENU,
                    R3_INNOVATIVE_MENU, clo_description_history, next_id)
 from pages_ober import course_picker, head
 
-SHORT = ["Sem I 2024-25", "Sem II 2024-25", "Sem I 2025-26"]
+SHORT = ["Sem I 2025-26", "Sem II 2025-26", "Sem I 2026-27"]
 
 
 def target_of(course):
