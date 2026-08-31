@@ -36,11 +36,11 @@ SEMESTERS = [
 # Offering order, oldest first — the R1 longitudinal window.
 OFFERING_ORDER = ["First Semester 2024-25", "Second Semester 2024-25", "First Semester 2025-26"]
 
-# Default attainment target. Source: her own "Target Sheet" in
-# CAA Materials/CS F531 ToC_CAA.xlsx, section "III. Target Setting", which sets
-# "Target Level %" = 60 for every evaluation component of CS F351 (I Sem
-# 2024-25). That sheet's own note — "Target Grades can be fixed based on subject
-# difficulty" — is why this is a per-course default here rather than a constant.
+# Default attainment target. OBER (Marksheet_CAA_Final_Demo.xlsx) stores no
+# target; its marksheet reports a headcount of students scoring >= 60% beside
+# each CLO, and 60 is the CAA OBEF v11.5 Appendix A threshold at which KPI 2.1
+# (Assessment Quality Review) enters the Medium band. Kept as a per-course
+# default so a course I/C can set a different value where the course warrants.
 DEFAULT_TARGET = 60.0
 TARGET_ATTAINMENT = DEFAULT_TARGET  # kept for callers that want the default
 
