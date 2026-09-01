@@ -234,13 +234,13 @@ SEED_CHANGE_LOG = [
 ]
 
 R3_STANDARD_MENU = [
-    ("Active learning redesign", "Freeman et al., PNAS, 2014; Theobald et al., PNAS, 2020"),
-    ("Peer instruction (Mazur-style)", "Vickrey et al., CBE Life Sciences Education, 2015"),
-    ("Flipped classroom", "Lo & Hew, Journal of Engineering Education, 2019"),
+    ("Active learning redesign", "Freeman et al., PNAS, 2014; Theobald et al., PNAS, 2020; Xu et al., Education Sciences, 2026"),
+    ("Peer instruction (Mazur-style)", "Vickrey et al., CBE Life Sciences Education, 2015; Öz, Pedagogies, 2024"),
+    ("Flipped classroom", "Lo & Hew, Journal of Engineering Education, 2019; Bredow et al., Review of Educational Research, 2021"),
     ("Supplemental instruction / peer-led sessions", "Dawson et al., Review of Educational Research, 2014"),
-    ("Retrieval practice / low-stakes quizzing", "Roediger & Karpicke, 2006; Roediger et al., 2011"),
+    ("Retrieval practice / low-stakes quizzing", "Roediger & Karpicke, 2006; Yang et al., Psychological Bulletin, 2021"),
     ("Worked examples / reduce cognitive load", "Paas & van Merriënboer, Current Directions in Psych. Science, 2020"),
-    ("Revise the assessment instrument / rubric", "Black & Wiliam, Phi Delta Kappan, 1998"),
+    ("Revise the assessment instrument / rubric", "Black & Wiliam, Phi Delta Kappan, 1998; Morris et al., Review of Education, 2021"),
 ]
 
 R3_INNOVATIVE_MENU = [
