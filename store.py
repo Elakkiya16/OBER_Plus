@@ -167,7 +167,7 @@ SEED_RECOMMENDATIONS = [
         "category": "Worked examples / reduce cognitive load",
         "citation": "Paas & van Merriënboer, Current Directions in Psychological Science, 2020",
         "evidence": "Below target in 2 of 3 offerings; average shortfall 11.5 pts; band Medium.",
-        "decided_by": "Dr. A. Rao",
+        "decided_by": "Course I/C 1",
         "decided_on": "2026-06-11",
         "status": "Implemented",
     },
@@ -178,7 +178,7 @@ SEED_RECOMMENDATIONS = [
         "category": "Industry-sourced problems as project/assessment content",
         "citation": "Villarroel et al., Assessment & Evaluation in Higher Education, 2018",
         "evidence": "Below target in 3 of 3 offerings; average shortfall 41.4 pts; band Low.",
-        "decided_by": "Dr. E. Rajasekar",
+        "decided_by": "Elakkiya Rajasekar",
         "decided_on": "2026-06-20",
         "status": "Implemented",
     },
@@ -197,7 +197,7 @@ SEED_CHANGE_LOG = [
                         "(Compre share 30% to 20%).",
         "before": "CLO4 weightage row: Problem Solving 70%, Compre 30%",
         "after": "CLO4 weightage row: Problem Solving 80%, Compre 20%",
-        "changed_by": "Dr. A. Rao",
+        "changed_by": "Course I/C 1",
         "changed_at": "2026-06-18",
     },
     {
@@ -207,11 +207,11 @@ SEED_CHANGE_LOG = [
         "path": "detected",
         "recommendation_id": None,
         "offering_boundary": "Second Semester 2025-26 → First Semester 2026-27",
-        "what_changed": "CLO3 description reworded during I/C handover (Dr. A. Rao → Dr. S. Menon). "
+        "what_changed": "CLO3 description reworded during I/C handover (Course I/C 1 to Course I/C 2). "
                         "Not routed through a recommendation. Caught by the CLO wording check.",
         "before": "Apply context-free grammars and pushdown automata to language problems.",
         "after": "Design context-free grammars and pushdown automata.",
-        "changed_by": "Dr. S. Menon",
+        "changed_by": "Course I/C 2",
         "changed_at": "2026-07-02",
     },
     {
@@ -228,7 +228,7 @@ SEED_CHANGE_LOG = [
                         "defect-inspection set and re-scoped the project brief around it.",
         "before": "Project: synthetic benchmark dataset, fixed brief",
         "after": "Project: industry-supplied dataset, partner-reviewed brief",
-        "changed_by": "Dr. E. Rajasekar",
+        "changed_by": "Elakkiya Rajasekar",
         "changed_at": "2026-07-10",
     },
 ]
@@ -343,12 +343,12 @@ def init_store():
     csf351 = _build_course(
         "31314", "CS F351", "Theory of Computation",
         CSF351_CLOS, CSF351_COMPONENTS, CSF351_WEIGHTAGE, CSF351_MARKDIST, CSF351_MAPPING,
-        ["Dr. A. Rao", "Dr. A. Rao", "Dr. S. Menon"], 28, seed=41,
+        ["Course I/C 1", "Course I/C 1", "Course I/C 2"], 28, seed=41,
     )
     csf459 = _build_course(
         "31316", "CS F459", "Computer Vision",
         CSF459_CLOS, CSF459_COMPONENTS, CSF459_WEIGHTAGE, CSF459_MARKDIST, CSF459_MAPPING,
-        ["Dr. E. Rajasekar"] * 3, 22, seed=77,
+        ["Elakkiya Rajasekar"] * 3, 22, seed=77,
     )
 
     store = {
