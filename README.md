@@ -4,35 +4,35 @@
 
 <br>
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-FAB001?style=flat-square&labelColor=011E4B)](requirements.txt)
-[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-87C6E9?style=flat-square&labelColor=011E4B)](https://streamlit.io)
-[![Live app](https://img.shields.io/badge/Live%20app-oberplus.streamlit.app-E40613?style=flat-square&labelColor=011E4B)](https://oberplus.streamlit.app/)
-[![Institution](https://img.shields.io/badge/BITS%20Pilani-Dubai%20Campus-87C6E9?style=flat-square&labelColor=011E4B)](https://www.bits-pilani.ac.in/dubai/)
+[![Python](https://img.shields.io/badge/Python-3.10+-FAB001?style=for-the-badge&labelColor=011E4B)](requirements.txt)
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-87C6E9?style=for-the-badge&labelColor=011E4B)](https://streamlit.io)
+[![Live](https://img.shields.io/badge/Live-oberplus.streamlit.app-E40613?style=for-the-badge&labelColor=011E4B)](https://oberplus.streamlit.app/)
+[![BITS Pilani](https://img.shields.io/badge/BITS%20Pilani-Dubai%20Campus-87C6E9?style=for-the-badge&labelColor=011E4B)](https://www.bits-pilani.ac.in/dubai/)
 
-**[Open the live app →](https://oberplus.streamlit.app/)**
+<sub><b><a href="https://oberplus.streamlit.app/">Open the live app →</a></b></sub>
 
 </div>
 
----
+<img src="assets/divider.png" width="100%" height="6" alt="">
 
-OBER+ is BPDC OBER with a continuous-improvement layer added on top. The
-CO/PO Mapping, Assessment and Report sections work exactly as they do in the
-deployed tool at `ober.bits-dubai.ac.ae`. The OBER+ section adds five stages —
-**Report, Reflect, Recommend, Redesign, Reassess** — that run on the same data
-without changing how attainment is computed.
+<p align="center">
+OBER+ is BPDC OBER with a continuous-improvement layer on top. CO/PO Mapping, Assessment and Report work exactly as they do at <code>ober.bits-dubai.ac.ae</code> — OBER+ adds five stages, <b>Report · Reflect · Recommend · Redesign · Reassess</b>, that run on the same data without touching how attainment is computed.
+</p>
 
-## Contents
+<p align="center">
+<a href="#screenshots"><b>Screenshots</b></a> ·
+<a href="#running-it"><b>Running it</b></a> ·
+<a href="#sections"><b>Sections</b></a> ·
+<a href="#interface"><b>Interface</b></a> ·
+<a href="#how-attainment-is-computed"><b>Attainment</b></a> ·
+<a href="#data"><b>Data</b></a> ·
+<a href="#files"><b>Files</b></a> ·
+<a href="#citation"><b>Citation</b></a>
+</p>
 
-- [Screenshots](#screenshots)
-- [Running it](#running-it)
-- [Sections](#sections)
-- [Interface](#interface)
-- [How attainment is computed](#how-attainment-is-computed)
-- [Data](#data)
-- [Files](#files)
-- [Citation](#citation)
+<img src="assets/divider.png" width="100%" height="6" alt="">
 
-## Screenshots
+## <img src="assets/bar_amber.png" height="22" width="9" alt=""> Screenshots
 
 <table>
 <tr>
@@ -45,16 +45,16 @@ without changing how attainment is computed.
 </tr>
 </table>
 
-## Running it
+## <img src="assets/bar_sky.png" height="22" width="9" alt=""> Running it
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Sections
+## <img src="assets/bar_red.png" height="22" width="9" alt=""> Sections
 
-### CO / PO Mapping
+**CO / PO Mapping**
 
 | Screen | What it does |
 |---|---|
@@ -63,13 +63,13 @@ streamlit run app.py
 | Evaluation Components | Marks per component, plus the weightage and mark-distribution matrices |
 | CLO-PLO Mapping | CLO × PLO grid, 1 per mapped cell |
 
-### Assessment
+**Assessment**
 
 | Screen | What it does |
 |---|---|
 | Marks Entry | Download the template, fill it in, upload it back — a blank cell reads as ABSENT |
 
-### Report
+**Report**
 
 | Screen | What it does |
 |---|---|
@@ -77,7 +77,7 @@ streamlit run app.py
 | CLO Report | Diverging bar of each CLO vs. target, then per-component breakdown and course attainment |
 | PLO Report | CLO → PLO grid against the target rule; unmapped PLOs are left out, not drawn as zero |
 
-### OBER+ · 5R loop
+**OBER+ · 5R loop**
 
 | Stage | What it does |
 |---|---|
@@ -88,23 +88,20 @@ streamlit run app.py
 | **R5 Reassess** | Before → after gap closure for every logged redesign |
 
 <details>
-<summary>Scoring & banding rules</summary>
+<summary><b>Scoring & banding rules</b></summary>
 
-- **R1** — offering-count gating, not calendar time: an elective run twice a year clears the 3-offering window in ~1.5 years instead of 3.
-- **R2** — severity = average shortfall across only the offerings that missed; banded High / Medium / Low / Very Low on CAA's own KPI 2.1 cutoffs (90 / 60 / 30 / 0, OBEF University Guidebook v11.5). Runs a CLO wording / RBT drift check alongside — never instead of — the flag.
-- **R4** — *Formal* records implement a recorded R3 recommendation; *detected* records are changes R2's drift check caught with no recommendation behind them.
-- **R5** — Gap Closure = (shortfall before − shortfall after) ÷ shortfall before, banded on the same cutoffs as R2.
+| Stage | Rule |
+|---|---|
+| R1 | Offering-count gating, not calendar time — an elective run twice a year clears the 3-offering window in ~1.5 years instead of 3 |
+| R2 | Severity = average shortfall across only the offerings that missed. Banded High / Medium / Low / Very Low on CAA's own KPI 2.1 cutoffs (90 / 60 / 30 / 0, OBEF University Guidebook v11.5). Runs a CLO wording / RBT drift check alongside — never instead of — the flag |
+| R4 | *Formal* records implement a recorded R3 recommendation; *detected* records are changes R2's drift check caught with no recommendation behind them |
+| R5 | Gap Closure = (shortfall before − shortfall after) ÷ shortfall before, banded on the same cutoffs as R2 |
 
 </details>
 
-## Interface
+## <img src="assets/bar_amber.png" height="22" width="9" alt=""> Interface
 
-Navy is chrome only — the masthead and nav bar. Everything below it runs on
-the campus tagline palette: **innovate amber**, **achieve sky**, **lead red**,
-cycled per section so a page title tells you where you are before you read
-the heading. Table headers are sky, the one primary action per screen is
-amber, row actions stay quiet. Band colours (High/Medium/Low/Very Low) are
-reserved separately — they mean severity, never decoration.
+Navy is chrome only — the masthead and nav bar. Everything below it runs on the campus tagline palette: **innovate amber**, **achieve sky**, **lead red**, cycled per section so a page title tells you where you are before you read the heading. Table headers are sky, the one primary action per screen is amber, row actions stay quiet. Band colours (High/Medium/Low/Very Low) are reserved separately — they mean severity, never decoration.
 
 | Token | Hex | Role |
 |---|---|---|
@@ -113,7 +110,7 @@ reserved separately — they mean severity, never decoration.
 | Sky | `#87C6E9` | Achieve — table headers, the next colour in turn |
 | Red | `#E40613` | Lead — the third colour in turn, never decoration alone |
 
-## How attainment is computed
+## <img src="assets/bar_sky.png" height="22" width="9" alt=""> How attainment is computed
 
 Unchanged from OBER:
 
@@ -133,25 +130,18 @@ Unchanged from OBER:
 \text{PLO attainment} = \text{average of the CLO attainments mapped to that PLO}
 ```
 
-No stage re-derives or reweights these — R2 and R5 always read OBER's own
-already-computed number for that specific offering, since each offering can
-carry its own component weightages.
+No stage re-derives or reweights these — R2 and R5 always read OBER's own already-computed number for that specific offering, since each offering can carry its own component weightages.
 
-## Data
+## <img src="assets/bar_red.png" height="22" width="9" alt=""> Data
 
-Ships loaded with CS F351 Theory of Computation, set up exactly as in the OBER
-user guide walkthrough (same six components, same 200-mark distribution, same
-CLO-PLO mapping), and CS F459 Computer Vision. Student rosters and marks are
-generated so every screen and both reports have something to work on from the
-first run; replace them by uploading real marks files through Marks Entry, or
-point `store.py` at OBER's own database.
+Ships loaded with CS F351 Theory of Computation, set up exactly as in the OBER user guide walkthrough (same six components, same 200-mark distribution, same CLO-PLO mapping), and CS F459 Computer Vision. Student rosters and marks are generated so every screen and both reports have something to work on from the first run; replace them by uploading real marks files through Marks Entry, or point `store.py` at OBER's own database.
 
 Edits made in the tool persist for the session.
 
-## Files
+## <img src="assets/bar_amber.png" height="22" width="9" alt=""> Files
 
 <details>
-<summary>Show the file layout</summary>
+<summary><b>Show the file layout</b></summary>
 
 | File | |
 |---|---|
@@ -165,7 +155,7 @@ Edits made in the tool persist for the session.
 
 </details>
 
-## Citation
+## <img src="assets/bar_sky.png" height="22" width="9" alt=""> Citation
 
 Preprint: [arXiv submission 8032374](https://services.arxiv.org/html/submission/8032374/view) — pending announcement, same title and source as the submitted paper.
 
@@ -176,6 +166,8 @@ Preprint: [arXiv submission 8032374](https://services.arxiv.org/html/submission/
   year={September 2026}
 }
 ```
+
+<img src="assets/divider.png" width="100%" height="6" alt="">
 
 <div align="center">
 <sub>OBER+ · LEAD Academics Capstone · BITS Pilani, Dubai Campus</sub>
