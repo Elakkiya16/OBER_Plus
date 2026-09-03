@@ -30,6 +30,7 @@ without changing how attainment is computed.
 - [How attainment is computed](#how-attainment-is-computed)
 - [Data](#data)
 - [Files](#files)
+- [Citation](#citation)
 
 ## Screenshots
 
@@ -91,16 +92,12 @@ ABSENT. Uploaded marks are listed with per-student component totals.
 
 ## Interface
 
-<img src="assets/banner.png" alt="" width="100%">
-
-Navy is chrome only: the masthead and the primary nav bar sit on it and nothing
-else does. Everything below that bar is carried by the campus tagline palette —
-**innovate amber**, **achieve sky**, **lead red**. The rule across the top of the
-masthead is that device; each section's page title takes one of the three so you
-can tell where you are before reading the heading; KPI tiles take the next colour
-in turn; table headers are sky; the one action a screen is for is amber, and row
-actions stay quiet so a Delete never looks like the primary move. Band colours
-are separate and reserved — they mean severity, never decoration.
+Navy is chrome only — the masthead and nav bar. Everything below it runs on
+the campus tagline palette: **innovate amber**, **achieve sky**, **lead red**,
+cycled per section so a page title tells you where you are before you read
+the heading. Table headers are sky, the one primary action per screen is
+amber, row actions stay quiet. Band colours (High/Medium/Low/Very Low) are
+reserved separately — they mean severity, never decoration.
 
 | Token | Hex | Role |
 |---|---|---|
@@ -113,20 +110,25 @@ are separate and reserved — they mean severity, never decoration.
 
 Unchanged from OBER:
 
-```
-component attainment (CLO c, component k)
-    = marks scored by all students for c in k
-    / (mark allocation for c in k × number of students)
-
-CLO attainment  = Σ_k  component_attainment(c,k) × weightage(c,k) / 100
-Course attainment = Σ_c CLO_attainment(c) × c's share of total marks
-PLO attainment  = average of the CLO attainments mapped to that PLO
+```math
+\text{Component attainment}(c,k) = \frac{\text{marks scored by all students for } c \text{ in } k}{\text{mark allocation for } c \text{ in } k \times \text{number of students}}
 ```
 
-No stage re-derives or reweights these. Each offering can carry its own
-component weightages, so R2 and R5 always read OBER's own already-computed
-number for that specific offering rather than blending CLOs with a single
-reused weight.
+```math
+\text{CLO attainment}(c) = \sum_{k} \text{Component attainment}(c,k) \times \frac{\text{weightage}(c,k)}{100}
+```
+
+```math
+\text{Course attainment} = \sum_{c} \text{CLO attainment}(c) \times \text{CLO's share of total marks}
+```
+
+```math
+\text{PLO attainment} = \text{average of the CLO attainments mapped to that PLO}
+```
+
+No stage re-derives or reweights these — R2 and R5 always read OBER's own
+already-computed number for that specific offering, since each offering can
+carry its own component weightages.
 
 ## Data
 
@@ -155,6 +157,16 @@ Edits made in the tool persist for the session.
 | `style.py` | interface styling and shared components |
 
 </details>
+
+## Citation
+
+```bibtex
+@article{OBER+2026,
+  title={},
+  author={Elakkiya R},
+  year={September 2026}
+}
+```
 
 <div align="center">
 <sub>OBER+ · LEAD Academics Capstone · BITS Pilani, Dubai Campus</sub>
