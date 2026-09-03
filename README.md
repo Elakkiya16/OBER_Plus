@@ -59,36 +59,43 @@ streamlit run app.py
 | Screen | What it does |
 |---|---|
 | Handout Upload | Course handout per course code, with download-back |
-| CLO Entry | CLO name + description, add / edit / delete |
-| Evaluation Components | Components and total marks, plus the Weightage Distribution matrix (each CLO row must total 100%) and the Mark Distribution matrix (each component column must equal that component's total marks) |
+| CLO Entry | Add / edit / delete CLOs |
+| Evaluation Components | Marks per component, plus the weightage and mark-distribution matrices |
 | CLO-PLO Mapping | CLO × PLO grid, 1 per mapped cell |
 
 ### Assessment
 
-**Marks Entry** — pick a course and component, download the marks template for
-that component's CLOs, fill it in, upload it back. A blank cell is read as
-ABSENT. Uploaded marks are listed with per-student component totals.
+| Screen | What it does |
+|---|---|
+| Marks Entry | Download the template, fill it in, upload it back — a blank cell reads as ABSENT |
 
 ### Report
 
-- **Marks Report** — every student's marks by component and CLO, exportable.
-  Table only; raw per-student records are not chart material.
-- **CLO Report** — a diverging bar of each CLO's distance from target (the
-  reader's question is *above or below, and by how much*), then per-component
-  attainment per CLO, the weighted-average row, and course attainment.
-- **PLO Report** — columns for the PLOs this course actually feeds, read
-  against the target rule, then the CLO→PLO grid with the programme-level
-  average. An unmapped PLO is left out rather than drawn as a zero.
+| Screen | What it does |
+|---|---|
+| Marks Report | Every student's marks, by component and CLO |
+| CLO Report | Diverging bar of each CLO vs. target, then per-component breakdown and course attainment |
+| PLO Report | CLO → PLO grid against the target rule; unmapped PLOs are left out, not drawn as zero |
 
 ### OBER+ · 5R loop
 
 | Stage | What it does |
 |---|---|
-| **R1 Report** | The same per-offering computation, accumulated across offerings and gated on *offering count* rather than calendar time, so an elective run twice a year clears the window in ~1.5 years instead of 3. Offerings are discrete sittings, so they are grouped columns on a light→dark ramp with time, not a joined line. |
-| **R2 Reflect** | Flags anything below target in ≥2 of the last 3 offerings, scores severity as the average shortfall across only the offerings that missed, and bands it High / Medium / Low / Very Low using CAA's own KPI 2.1 cutoff spacing (90 / 60 / 30 / 0, OBEF University Guidebook v11.5). Runs a CLO wording / RBT drift check alongside — never instead of — the flag. |
-| **R3 Recommend** | Packages R2's evidence and presents a cited menu of standard and innovative practices, plus free-text instructor choice. Nothing is auto-picked; whatever is chosen is recorded with an ID. |
-| **R4 Redesign** | The change log. *Formal* records implement a recorded R3 recommendation; *detected* records are changes R2's drift check caught with no recommendation behind them. Both keep full before/after content. |
-| **R5 Reassess** | The offering right after a logged redesign against the one right before it. Gap Closure = (shortfall before − shortfall after) ÷ shortfall before, banded on the same cutoffs as R2. Every logged redesign is drawn as one dumbbell row — the standard before→after form — so all interventions are comparable on a single axis against the target rule. |
+| **R1 Report** | Attainment accumulated across offerings — gated on *offering count*, not calendar time |
+| **R2 Reflect** | Flags CLOs below target in ≥2 of the last 3 offerings, banded by severity |
+| **R3 Recommend** | A cited menu of practices against R2's evidence — nothing auto-picked |
+| **R4 Redesign** | The change log — *formal* (from a recommendation) or *detected* (caught automatically) |
+| **R5 Reassess** | Before → after gap closure for every logged redesign |
+
+<details>
+<summary>Scoring & banding rules</summary>
+
+- **R1** — offering-count gating, not calendar time: an elective run twice a year clears the 3-offering window in ~1.5 years instead of 3.
+- **R2** — severity = average shortfall across only the offerings that missed; banded High / Medium / Low / Very Low on CAA's own KPI 2.1 cutoffs (90 / 60 / 30 / 0, OBEF University Guidebook v11.5). Runs a CLO wording / RBT drift check alongside — never instead of — the flag.
+- **R4** — *Formal* records implement a recorded R3 recommendation; *detected* records are changes R2's drift check caught with no recommendation behind them.
+- **R5** — Gap Closure = (shortfall before − shortfall after) ÷ shortfall before, banded on the same cutoffs as R2.
+
+</details>
 
 ## Interface
 
@@ -160,9 +167,11 @@ Edits made in the tool persist for the session.
 
 ## Citation
 
+Preprint: [arXiv submission 8032374](https://services.arxiv.org/html/submission/8032374/view) — pending announcement, same title and source as the submitted paper.
+
 ```bibtex
 @article{OBER+2026,
-  title={},
+  title={OBER+: Continuity-Aware Reporting and Traceable Continuous Improvement in Outcome-Based Education},
   author={Elakkiya R},
   year={September 2026}
 }
