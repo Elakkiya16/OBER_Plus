@@ -15,7 +15,8 @@ import streamlit as st
 
 import compute as cp
 import style as S
-from engine import r2_reflect_series, r5_reassess, classify_rbt
+from engine import (r2_reflect_series, r5_reassess, classify_rbt,
+                    classify_clo_change, SIM_THRESHOLD)
 from store import (OFFERING_ORDER, PLO_IDS, R3_STANDARD_MENU,
                    R3_INNOVATIVE_MENU, clo_description_history, next_id)
 from pages_ober import course_picker, head
@@ -52,9 +53,11 @@ def _drift(store, course):
         for i in range(1, len(hist)):
             if hist[i] != hist[i - 1]:
                 a, b = classify_rbt(hist[i - 1]), classify_rbt(hist[i])
+                kind, sim, _, _ = classify_clo_change(hist[i - 1], hist[i])
                 notes.append({"clo": clo["name"], "at": OFFERING_ORDER[i],
                               "from_text": hist[i - 1], "to_text": hist[i],
-                              "from_level": a, "to_level": b, "level_changed": a != b})
+                              "from_level": a, "to_level": b, "level_changed": a != b,
+                              "kind": kind, "similarity": sim})
     return notes
 
 
@@ -229,12 +232,15 @@ def page_r2(store):
                 right=f"{len(notes)} detected" if notes else "none detected"):
         if not notes:
             st.markdown(f'<div class="card-note">No CLO description changed across the '
-                        f'three-offering window.</div>', unsafe_allow_html=True)
+                        f'last three offerings.</div>', unsafe_allow_html=True)
         for n in notes:
+            sim_txt = ("similarity %.3f" % n["similarity"]) if n["similarity"] is not None \
+                else "similarity unavailable"
             st.markdown(S.record_card(
-                n["clo"], f'{n["from_level"]} → {n["to_level"]}', "#FDF3E3", "#8A5A12",
+                n["clo"], n["kind"], "#FDF3E3", "#8A5A12",
                 f'changed at {n["at"]}',
-                "Edited between offerings with no recommendation behind it.",
+                f'{n["from_level"]} → {n["to_level"]}, {sim_txt}. '
+                f'Edited between offerings with no recommendation behind it.',
                 before=n["from_text"], after=n["to_text"], accent=S.BAND_COLOR["L"]),
                 unsafe_allow_html=True)
 

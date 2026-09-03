@@ -124,6 +124,60 @@ def classify_rbt(description: str) -> str:
     return BLOOM_VERB_LEVELS.get(first_word, "Unclassified")
 
 
+# --- Sentence-embedding similarity and CLO change classification ------------
+# Each CLO statement is represented as a sentence embedding, the mean of the
+# pretrained 300-dimensional word vectors of spaCy's en_core_web_md model, and
+# two statements are compared by cosine similarity. The similarity is combined
+# with the RBT level of the leading verb to classify what actually changed.
+# Threshold set on a labelled set of CLO pairs (see eval_clo_change.py).
+
+SIM_THRESHOLD = 0.90
+_NLP = None
+
+
+def _nlp():
+    global _NLP
+    if _NLP is None:
+        import spacy
+        _NLP = spacy.load("en_core_web_md")
+    return _NLP
+
+
+def clo_similarity(a: str, b: str):
+    """Cosine similarity of the two sentence embeddings, or None if the
+    embedding model is unavailable."""
+    try:
+        import numpy as np
+        va, vb = _nlp()(a).vector, _nlp()(b).vector
+        na, nb = float(np.linalg.norm(va)), float(np.linalg.norm(vb))
+        if na == 0.0 or nb == 0.0:
+            return None
+        return round(float(np.dot(va, vb) / (na * nb)), 3)
+    except Exception:
+        return None
+
+
+def _normalise(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
+def classify_clo_change(before: str, after: str):
+    """Classify a CLO edit as Unchanged, Paraphrase, Change of cognitive level
+    or Replacement. Returns (class, similarity, level_before, level_after).
+    With no embedding model the check falls back to the verb comparison alone."""
+    lb, la = classify_rbt(before), classify_rbt(after)
+    if _normalise(before) == _normalise(after):
+        return "Unchanged", 1.0, lb, la
+    sim = clo_similarity(before, after)
+    if sim is None:
+        return ("Change of cognitive level" if lb != la else "Paraphrase"), None, lb, la
+    if sim < SIM_THRESHOLD:
+        return "Replacement", sim, lb, la
+    if lb != la:
+        return "Change of cognitive level", sim, lb, la
+    return "Paraphrase", sim, lb, la
+
+
 # ---------------------------------------------------------------------------
 # R5 — Reassess: immediate before/after gap closure, same H/M/L/VL bands
 # ---------------------------------------------------------------------------
